@@ -59,6 +59,7 @@ namespace NeonShooter
 
             // TODO: Add your update logic here
             m_PlayerShip.Update ();
+            BulletManager.Update ();
 
             base.Update (_gameTime);
         }
@@ -69,6 +70,7 @@ namespace NeonShooter
 
             m_SpriteBatch.Begin ();
             m_PlayerShip.Draw (m_SpriteBatch);
+            BulletManager.Draw (m_SpriteBatch);
             m_SpriteBatch.End ();
 
             base.Draw (_gameTime);

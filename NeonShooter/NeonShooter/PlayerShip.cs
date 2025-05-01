@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Reflection.Metadata;
 
 namespace NeonShooter
 {
@@ -13,6 +14,9 @@ namespace NeonShooter
         private float m_Rotation = 0f;
         private Vector2 m_Size = Vector2.Zero;
         private float m_Scale = 1f;
+
+        private const int m_CooldownFrames = 6;
+        private int m_CooldownRemaining = 0;
 
         public Vector2 Position { get { return m_Position; } }
         public float Rotation { get { return m_Rotation; } }
@@ -69,6 +73,21 @@ namespace NeonShooter
             }
 
             m_Rotation = (float)Math.Atan2 (aimDirection.Y, aimDirection.X);
+
+            if (m_CooldownRemaining == 0)
+            {
+                Quaternion aimQuaternion = Quaternion.CreateFromYawPitchRoll (0, 0, m_Rotation);
+                Vector2 velocity = 11f * new Vector2 ((float)Math.Cos (m_Rotation), (float)Math.Sin (m_Rotation));
+                BulletManager.AddBullet (new Bullet (Art.Bullet, m_Position + Vector2.Transform (new Vector2 (35, -8), aimQuaternion), velocity, m_Rotation));
+                BulletManager.AddBullet (new Bullet (Art.Bullet, m_Position + Vector2.Transform (new Vector2 (35, 8), aimQuaternion), velocity, m_Rotation));
+
+                m_CooldownRemaining = m_CooldownFrames;
+            }
+
+            if (m_CooldownRemaining > 0)
+            {
+                m_CooldownRemaining--;
+            }
         }
 
         public void Draw (SpriteBatch _spriteBatch)
