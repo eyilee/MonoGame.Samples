@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace NeonShooter
 {
-    static class Sound
+    public static class Sound
     {
         public static Song Music { get; private set; }
 

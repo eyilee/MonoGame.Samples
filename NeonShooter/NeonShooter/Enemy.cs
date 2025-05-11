@@ -4,7 +4,7 @@ using System;
 
 namespace NeonShooter
 {
-    public class Bullet
+    public class Enemy
     {
         private Texture2D m_Image;
         private Vector2 m_Position = Vector2.Zero;
@@ -22,7 +22,7 @@ namespace NeonShooter
         public float Radius { get { return m_Radius; } }
         public bool IsExpired { get { return m_IsExpired; } }
 
-        public Bullet (Texture2D _image, Vector2 _position, Vector2 _velocity, float _rotation)
+        public Enemy (Texture2D _image, Vector2 _position, Vector2 _velocity, float _rotation)
         {
             m_Image = _image;
             m_Position = _position;
@@ -34,12 +34,6 @@ namespace NeonShooter
 
         public void Update ()
         {
-            m_Position += m_Velocity;
-
-            if (m_Position.X < 0 || m_Position.X > Game1.Width || m_Position.Y < 0 || m_Position.Y > Game1.Height)
-            {
-                m_IsExpired = true;
-            }
         }
 
         public void Draw (SpriteBatch _spriteBatch)

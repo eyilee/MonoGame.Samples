@@ -2,17 +2,17 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Reflection.Metadata;
 
 namespace NeonShooter
 {
-    class PlayerShip
+    public class PlayerShip
     {
         private Texture2D m_Image;
         private Vector2 m_Position = Vector2.Zero;
         private Color m_Color = Color.White;
         private float m_Rotation = 0f;
         private Vector2 m_Size = Vector2.Zero;
+        private float m_Radius = 0f;
         private float m_Scale = 1f;
 
         private const int m_CooldownFrames = 6;
@@ -21,6 +21,7 @@ namespace NeonShooter
         public Vector2 Position { get { return m_Position; } }
         public float Rotation { get { return m_Rotation; } }
         public Vector2 Size { get { return m_Size; } }
+        public float Radius { get { return m_Radius; } }
 
         public PlayerShip (Texture2D _image, Vector2 _position, float _rotation)
         {
@@ -28,6 +29,7 @@ namespace NeonShooter
             m_Position = _position;
             m_Rotation = _rotation;
             m_Size = new Vector2 (_image.Width, _image.Height);
+            m_Radius = MathF.Sqrt (m_Size.X * m_Size.X + m_Size.Y * m_Size.Y) / 2f;
         }
 
         public void Update ()
@@ -93,6 +95,18 @@ namespace NeonShooter
         public void Draw (SpriteBatch _spriteBatch)
         {
             _spriteBatch.Draw (m_Image, m_Position, null, m_Color, m_Rotation, m_Size / 2f, m_Scale, SpriteEffects.None, 0f);
+        }
+
+        public void Kill ()
+        {
+            Game1.Instance.Reset ();
+        }
+
+        public void Reset ()
+        {
+            m_Position = new Vector2 (Game1.Width / 2f, Game1.Height / 2f);
+            m_Rotation = 0f;
+            m_CooldownRemaining = 0;
         }
     }
 }

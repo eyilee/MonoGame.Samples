@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace NeonShooter
 {
-    static class Art
+    public static class Art
     {
         public static Texture2D Player { get; private set; }
         public static Texture2D Seeker { get; private set; }

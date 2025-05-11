@@ -3,9 +3,10 @@ using System.Collections.Generic;
 
 namespace NeonShooter
 {
-    static class BulletManager
+    public static class BulletManager
     {
         static readonly List<Bullet> m_BulletList = [];
+        public static List<Bullet> BulletList {  get { return m_BulletList; } }
 
         public static void AddBullet (Bullet _bullet)
         {
