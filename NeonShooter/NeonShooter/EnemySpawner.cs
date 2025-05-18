@@ -12,7 +12,12 @@ namespace NeonShooter
         {
             if (m_Random.Next ((int)m_nInverseSpawnChance) == 0)
             {
-                EnemyManager.AddEnemy (new Enemy (Art.Seeker, GetSpawnPosition (), Vector2.Zero, 0f));
+                EntityManager.AddEntity (Enemy.CreateSeeker (GetSpawnPosition (), Vector2.Zero, 0f));
+            }
+
+            if (m_Random.Next ((int)m_nInverseSpawnChance) == 0)
+            {
+                EntityManager.AddEntity (Enemy.CreateWanderer (GetSpawnPosition (), Vector2.Zero, 0f));
             }
 
             if (m_nInverseSpawnChance > 30f)
@@ -29,7 +34,7 @@ namespace NeonShooter
             {
                 position = new Vector2 (m_Random.Next (Game1.Width), m_Random.Next (Game1.Height));
             }
-            while (Vector2.DistanceSquared (position, Game1.Instance.PlayerShip.Position) < 250 * 250);
+            while (Vector2.DistanceSquared (position, EntityManager.PlayerShip.Position) < 250 * 250);
 
             return position;
         }

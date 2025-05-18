@@ -5,23 +5,10 @@ using System;
 
 namespace NeonShooter
 {
-    public class PlayerShip
+    public class PlayerShip : Entity
     {
-        private Texture2D m_Image;
-        private Vector2 m_Position = Vector2.Zero;
-        private Color m_Color = Color.White;
-        private float m_Rotation = 0f;
-        private Vector2 m_Size = Vector2.Zero;
-        private float m_Radius = 0f;
-        private float m_Scale = 1f;
-
         private const int m_CooldownFrames = 6;
         private int m_CooldownRemaining = 0;
-
-        public Vector2 Position { get { return m_Position; } }
-        public float Rotation { get { return m_Rotation; } }
-        public Vector2 Size { get { return m_Size; } }
-        public float Radius { get { return m_Radius; } }
 
         public PlayerShip (Texture2D _image, Vector2 _position, float _rotation)
         {
@@ -32,7 +19,7 @@ namespace NeonShooter
             m_Radius = MathF.Sqrt (m_Size.X * m_Size.X + m_Size.Y * m_Size.Y) / 2f;
         }
 
-        public void Update ()
+        public override void Update ()
         {
             KeyboardState keyboardState = Keyboard.GetState ();
 
@@ -80,8 +67,8 @@ namespace NeonShooter
             {
                 Quaternion aimQuaternion = Quaternion.CreateFromYawPitchRoll (0, 0, m_Rotation);
                 Vector2 velocity = 11f * new Vector2 ((float)Math.Cos (m_Rotation), (float)Math.Sin (m_Rotation));
-                BulletManager.AddBullet (new Bullet (Art.Bullet, m_Position + Vector2.Transform (new Vector2 (35, -8), aimQuaternion), velocity, m_Rotation));
-                BulletManager.AddBullet (new Bullet (Art.Bullet, m_Position + Vector2.Transform (new Vector2 (35, 8), aimQuaternion), velocity, m_Rotation));
+                EntityManager.AddEntity (new Bullet (Art.Bullet, m_Position + Vector2.Transform (new Vector2 (35, -8), aimQuaternion), velocity, m_Rotation));
+                EntityManager.AddEntity (new Bullet (Art.Bullet, m_Position + Vector2.Transform (new Vector2 (35, 8), aimQuaternion), velocity, m_Rotation));
 
                 m_CooldownRemaining = m_CooldownFrames;
             }
@@ -92,14 +79,9 @@ namespace NeonShooter
             }
         }
 
-        public void Draw (SpriteBatch _spriteBatch)
-        {
-            _spriteBatch.Draw (m_Image, m_Position, null, m_Color, m_Rotation, m_Size / 2f, m_Scale, SpriteEffects.None, 0f);
-        }
-
         public void Kill ()
         {
-            Game1.Instance.Reset ();
+            EntityManager.Reset ();
         }
 
         public void Reset ()
