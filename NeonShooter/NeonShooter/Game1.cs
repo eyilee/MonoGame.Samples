@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BloomPostprocess;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
@@ -11,6 +12,7 @@ namespace NeonShooter
 
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatch m_SpriteBatch;
+        private BloomComponent m_BloomComponent;
 
         public static int Width { get; private set; }
         public static int Height { get; private set; }
@@ -29,6 +31,11 @@ namespace NeonShooter
                 PreferredBackBufferWidth = Width,
                 PreferredBackBufferHeight = Height
             };
+
+            m_BloomComponent = new BloomComponent (this);
+            Components.Add (m_BloomComponent);
+            m_BloomComponent.Settings = new BloomSettings (null, 0.25f, 4, 2, 1, 1.5f, 1);
+            m_BloomComponent.Visible = true;
 
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
@@ -68,7 +75,9 @@ namespace NeonShooter
 
         protected override void Draw (GameTime _gameTime)
         {
-            GraphicsDevice.Clear (Color.CornflowerBlue);
+            m_BloomComponent.BeginDraw ();
+
+            GraphicsDevice.Clear (Color.Black);
 
             m_SpriteBatch.Begin ();
             EntityManager.Draw (m_SpriteBatch);
