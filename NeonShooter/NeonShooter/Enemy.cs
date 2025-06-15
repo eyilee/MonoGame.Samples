@@ -95,6 +95,22 @@ namespace NeonShooter
         public void Kill ()
         {
             m_IsExpired = true;
+
+            float hue1 = m_Random.NextSingle () * 6f;
+            float hue2 = (hue1 + m_Random.NextSingle () * 2f) % 6f;
+            Color color1 = ColorUtil.HSVToColor (hue1, 0.5f, 1);
+            Color color2 = ColorUtil.HSVToColor (hue2, 0.5f, 1);
+
+            for (int i = 0; i < 120; i++)
+            {
+                double theta = m_Random.NextDouble () * 2 * Math.PI;
+                float speed = 18f * (1f - 1 / (m_Random.NextSingle () * 9f + 1f));
+                Vector2 velocity = new (speed * (float)Math.Cos (theta), speed * (float)Math.Sin (theta));
+                Color color = Color.Lerp (color1, color2, m_Random.NextSingle ());
+                ParticleManager.CreateParticle (Art.LineParticle, Position, velocity, color, new Vector2 (1.5f, 1.5f), 190f);
+            }
+
+            Sound.Explosion.Play (0.5f, m_Random.NextSingle () * 0.4f - 0.2f, 0);
         }
     }
 }

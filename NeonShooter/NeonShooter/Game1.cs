@@ -14,6 +14,8 @@ namespace NeonShooter
         private SpriteBatch m_SpriteBatch;
         private BloomComponent m_BloomComponent;
 
+        public GameTime GameTime { get; private set; }
+
         public static int Width { get; private set; }
         public static int Height { get; private set; }
 
@@ -63,12 +65,15 @@ namespace NeonShooter
 
         protected override void Update (GameTime _gameTime)
         {
+            GameTime = _gameTime;
+
             if (GamePad.GetState (PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState ().IsKeyDown (Keys.Escape))
                 Exit ();
 
             // TODO: Add your update logic here
             EntityManager.Update ();
             EnemySpawner.Update ();
+            ParticleManager.Update ();
 
             base.Update (_gameTime);
         }
@@ -79,8 +84,9 @@ namespace NeonShooter
 
             GraphicsDevice.Clear (Color.Black);
 
-            m_SpriteBatch.Begin ();
+            m_SpriteBatch.Begin (SpriteSortMode.Deferred, BlendState.Additive);
             EntityManager.Draw (m_SpriteBatch);
+            ParticleManager.Draw (m_SpriteBatch);
             m_SpriteBatch.End ();
 
             base.Draw (_gameTime);
