@@ -7,6 +7,7 @@ namespace NeonShooter
     {
         static readonly Random m_Random = new ();
         static float m_nInverseSpawnChance = 90f;
+        static float m_nInverseBlackHoleChance = 600f;
 
         public static void Update ()
         {
@@ -18,6 +19,11 @@ namespace NeonShooter
             if (m_Random.Next ((int)m_nInverseSpawnChance) == 0)
             {
                 EntityManager.AddEntity (Enemy.CreateWanderer (GetSpawnPosition (), Vector2.Zero, 0f));
+            }
+
+            if (m_Random.Next ((int)m_nInverseBlackHoleChance) == 0)
+            {
+                EntityManager.AddEntity (new BlackHole (Art.BlackHole, GetSpawnPosition (), Vector2.Zero, 0f));
             }
 
             if (m_nInverseSpawnChance > 30f)

@@ -16,6 +16,7 @@ namespace NeonShooter
         protected bool m_IsExpired = false;
 
         public Vector2 Position { get { return m_Position; } }
+        public Vector2 Velocity { get { return m_Velocity; } set { m_Velocity = value; } }
         public float Rotation { get { return m_Rotation; } }
         public Vector2 Size { get { return m_Size; } }
         public float Radius { get { return m_Radius; } }

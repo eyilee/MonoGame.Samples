@@ -50,6 +50,19 @@ namespace NeonShooter
                 Velocity.Y = -Math.Abs (Velocity.Y);
             }
 
+            foreach (BlackHole blackHole in EntityManager.BlackHoleList)
+            {
+                Vector2 direction = blackHole.Position - Position;
+                float distance = direction.Length ();
+                Vector2 velocity = direction / distance;
+                Velocity += 10000 * velocity / (distance * distance + 10000);
+
+                if (distance < 400)
+                {
+                    Velocity += 45 * new Vector2 (velocity.Y, -velocity.X) / (distance + 100);
+                }
+            }
+
             if (Math.Abs (Velocity.X) + Math.Abs (Velocity.Y) < 0.00000000001f)
             {
                 Velocity = Vector2.Zero;

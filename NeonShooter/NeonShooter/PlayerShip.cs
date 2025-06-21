@@ -51,8 +51,9 @@ namespace NeonShooter
                 direction.Normalize ();
             }
 
-            m_Velocity = direction * 8;
+            m_Velocity += direction * 8;
             m_Position += m_Velocity;
+            m_Velocity = Vector2.Zero;
             m_Position.X = float.Clamp (m_Position.X, Size.X / 2, (Game1.Width - Size.X / 2));
             m_Position.Y = float.Clamp (m_Position.Y, Size.Y / 2, (Game1.Height - Size.Y / 2));
 

@@ -22,6 +22,11 @@ namespace NeonShooter
         {
             m_Position += m_Velocity;
 
+            if (m_Velocity != Vector2.Zero)
+            {
+                m_Rotation = MathF.Atan2 (m_Velocity.Y, m_Velocity.X);
+            }
+
             if (m_Position.X < 0 || m_Position.X > Game1.Width || m_Position.Y < 0 || m_Position.Y > Game1.Height)
             {
                 Kill ();
