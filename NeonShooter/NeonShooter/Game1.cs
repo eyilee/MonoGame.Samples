@@ -15,6 +15,7 @@ namespace NeonShooter
         private BloomComponent m_BloomComponent;
 
         public GameTime GameTime { get; private set; }
+        public Grid Grid { get; private set; }
 
         public static int Width { get; private set; }
         public static int Height { get; private set; }
@@ -46,6 +47,7 @@ namespace NeonShooter
         protected override void Initialize ()
         {
             // TODO: Add your initialization logic here
+            Grid = new Grid (80);
 
             base.Initialize ();
         }
@@ -74,6 +76,7 @@ namespace NeonShooter
             EntityManager.Update ();
             EnemySpawner.Update ();
             ParticleManager.Update ();
+            Grid.Update ();
 
             base.Update (_gameTime);
         }
@@ -87,6 +90,7 @@ namespace NeonShooter
             m_SpriteBatch.Begin (SpriteSortMode.Deferred, BlendState.Additive);
             EntityManager.Draw (m_SpriteBatch);
             ParticleManager.Draw (m_SpriteBatch);
+            Grid.Draw (m_SpriteBatch);
             m_SpriteBatch.End ();
 
             base.Draw (_gameTime);

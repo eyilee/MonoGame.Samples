@@ -83,6 +83,8 @@ namespace NeonShooter
             {
                 m_CooldownRemaining--;
             }
+
+            Game1.Instance.Grid.ApplyForce (10, new Vector3 (Position, 0), 50);
         }
 
         public void Kill ()
