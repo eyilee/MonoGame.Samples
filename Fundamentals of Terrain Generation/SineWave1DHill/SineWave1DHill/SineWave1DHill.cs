@@ -8,12 +8,12 @@ namespace SineWave1DHill
     {
         private static readonly Random _random = new ();
 
-        private Texture2D _texture;
-        private int _unitWidth = 1;
-        private int _unitHeight = 200;
+        private readonly Texture2D _texture;
+        private readonly int _unitWidth = 1;
+        private readonly int _unitHeight = 200;
 
-        private int _size;
-        private int _iteration;
+        private readonly int _size;
+        private readonly int _iteration;
 
         private float[] _heightMap;
         private float[] _randomHeightMap;
@@ -97,8 +97,8 @@ namespace SineWave1DHill
 
         private static float SineInterpolation (float value1, float value2, float amount)
         {
-            float f = (1.0f - MathF.Sin (amount * MathF.PI + MathF.PI / 2.0f)) / 2.0f;
-            return value1 * (1.0f - f) + value2 * f;
+            float f = (1.0f - MathF.Sin ((amount * MathF.PI) + (MathF.PI / 2.0f))) / 2.0f;
+            return (value1 * (1.0f - f)) + (value2 * f);
         }
 
         public void Draw (SpriteBatch spriteBatch)
@@ -110,7 +110,7 @@ namespace SineWave1DHill
             for (int x = 0; x < _size; x++)
             {
                 int height = (int)(_heightMap[x] * _unitHeight);
-                spriteBatch.Draw (_texture, new Rectangle (x * _unitWidth - halfWidth, halfHeight - height, _unitWidth, height), color);
+                spriteBatch.Draw (_texture, new Rectangle ((x * _unitWidth) - halfWidth, halfHeight - height, _unitWidth, height), color);
             }
         }
     }

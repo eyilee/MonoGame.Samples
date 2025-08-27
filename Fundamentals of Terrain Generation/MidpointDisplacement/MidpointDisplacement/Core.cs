@@ -22,7 +22,7 @@ namespace MidpointDisplacement
 
         private MidpointDisplacement _midpointDisplacement;
 
-        private float _stepTime = 0.6f;
+        private readonly float _stepTime = 0.6f;
         private float _nextStepTime = 0;
 
         private KeyboardState _prevKeyboardState;

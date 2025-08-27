@@ -8,13 +8,13 @@ namespace MidpointDisplacement
     {
         private static readonly Random _random = new ();
 
-        private Texture2D _texture;
-        private int _tileSize = 10;
+        private readonly Texture2D _texture;
+        private readonly int _tileSize = 10;
 
-        private int _exponent;
-        private int _size;
-        private float _spread;
-        private float _damping;
+        private readonly int _exponent;
+        private readonly int _size;
+        private readonly float _spread;
+        private readonly float _damping;
 
         private float[] _heightMap;
         private int _currentStepSize;
@@ -115,7 +115,7 @@ namespace MidpointDisplacement
                 {
                     float height = GetHeight (x, y);
                     Color color = new (height, height, height, 1.0f);
-                    spriteBatch.Draw (_texture, new Rectangle ((x * _tileSize) - halfSize, (y * _tileSize) - halfSize, _tileSize, _tileSize), color);
+                    spriteBatch.Draw (_texture, new Rectangle ((x * _tileSize) - halfSize, halfSize - (y * _tileSize) - _tileSize, _tileSize, _tileSize), color);
                 }
             }
         }

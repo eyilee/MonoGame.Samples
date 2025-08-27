@@ -22,7 +22,7 @@ namespace SineWave1DHill
 
         private SineWave1DHill _sineWave1DHill;
 
-        private float _stepTime = 0.6f;
+        private readonly float _stepTime = 0.6f;
         private float _nextStepTime = 0;
 
         private KeyboardState _prevKeyboardState;

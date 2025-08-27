@@ -8,13 +8,13 @@ namespace DiamondSquare
     {
         private static readonly Random _random = new ();
 
-        private Texture2D _texture;
-        private int _tileSize = 10;
+        private readonly Texture2D _texture;
+        private readonly int _tileSize = 10;
 
-        private int _exponent;
-        private int _size;
-        private float _spread;
-        private float _damping;
+        private readonly int _exponent;
+        private readonly int _size;
+        private readonly float _spread;
+        private readonly float _damping;
 
         private float[] _heightMap;
         private int _currentStepSize;
@@ -87,7 +87,7 @@ namespace DiamondSquare
                     float rightTop = GetHeight (x + _currentStepSize, y + _currentStepSize);
                     float rightBottom = GetHeight (x + _currentStepSize, y);
                     float leftBottom = GetHeight (x, y);
-                    float center = Math.Clamp ((leftTop + rightTop + rightBottom + leftBottom) / 4.0f + (_random.NextSingle () - 0.5f) * _currentSpread, 0.0f, 1.0f);
+                    float center = Math.Clamp (((leftTop + rightTop + rightBottom + leftBottom) / 4.0f) + ((_random.NextSingle () - 0.5f) * _currentSpread), 0.0f, 1.0f);
 
                     SetHeight (x + halfStep, y + halfStep, center);
                 }
@@ -105,23 +105,23 @@ namespace DiamondSquare
 
                     if (x == 0)
                     {
-                        SetHeight (x, y, Math.Clamp ((top + right + bottom) / 3.0f + (_random.NextSingle () - 0.5f) * halfSpread, 0.0f, 1.0f));
+                        SetHeight (x, y, Math.Clamp (((top + right + bottom) / 3.0f) + ((_random.NextSingle () - 0.5f) * halfSpread), 0.0f, 1.0f));
                     }
                     else if (x == _size - 1)
                     {
-                        SetHeight (x, y, Math.Clamp ((left + top + bottom) / 3.0f + (_random.NextSingle () - 0.5f) * halfSpread, 0.0f, 1.0f));
+                        SetHeight (x, y, Math.Clamp (((left + top + bottom) / 3.0f) + ((_random.NextSingle () - 0.5f) * halfSpread), 0.0f, 1.0f));
                     }
                     else if (y == 0)
                     {
-                        SetHeight (x, y, Math.Clamp ((left + top + right) / 3.0f + (_random.NextSingle () - 0.5f) * halfSpread, 0.0f, 1.0f));
+                        SetHeight (x, y, Math.Clamp (((left + top + right) / 3.0f) + ((_random.NextSingle () - 0.5f) * halfSpread), 0.0f, 1.0f));
                     }
                     else if (y == _size - 1)
                     {
-                        SetHeight (x, y, Math.Clamp ((left + right + bottom) / 3.0f + (_random.NextSingle () - 0.5f) * halfSpread, 0.0f, 1.0f));
+                        SetHeight (x, y, Math.Clamp (((left + right + bottom) / 3.0f) + ((_random.NextSingle () - 0.5f) * halfSpread), 0.0f, 1.0f));
                     }
                     else
                     {
-                        SetHeight (x, y, Math.Clamp ((left + top + right + bottom) / 4.0f + (_random.NextSingle () - 0.5f) * halfSpread, 0.0f, 1.0f));
+                        SetHeight (x, y, Math.Clamp (((left + top + right + bottom) / 4.0f) + ((_random.NextSingle () - 0.5f) * halfSpread), 0.0f, 1.0f));
                     }
                 }
             }
@@ -140,7 +140,7 @@ namespace DiamondSquare
                 {
                     float height = GetHeight (x, y);
                     Color color = new (height, height, height, 1.0f);
-                    spriteBatch.Draw (_texture, new Rectangle (x * _tileSize - halfSize, y * _tileSize - halfSize, _tileSize, _tileSize), color);
+                    spriteBatch.Draw (_texture, new Rectangle ((x * _tileSize) - halfSize, halfSize - (y * _tileSize) - _tileSize, _tileSize, _tileSize), color);
                 }
             }
         }

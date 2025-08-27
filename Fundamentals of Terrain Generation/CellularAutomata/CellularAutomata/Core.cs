@@ -22,7 +22,7 @@ namespace CellularAutomata
 
         private CellularAutomata _cellularAutomata;
 
-        private float _stepTime = 0.25f;
+        private readonly float _stepTime = 0.25f;
         private float _nextStepTime = 0;
 
         private KeyboardState _prevKeyboardState;

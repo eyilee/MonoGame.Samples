@@ -8,11 +8,11 @@ namespace CellularAutomata
     {
         private static readonly Random _random = new ();
 
-        private Texture2D _texture;
-        private int _cellSize = 4;
+        private readonly Texture2D _texture;
+        private readonly int _cellSize = 4;
 
-        private int _size;
-        private float _aliveRate;
+        private readonly int _size;
+        private readonly float _aliveRate;
 
         private static readonly Tuple<int, int>[] _neighborOffsets =
         [
@@ -131,7 +131,7 @@ namespace CellularAutomata
                 for (int y = 0; y < _size; y++)
                 {
                     bool isAlive = _cellMap[_currentIndex][GetIndex (x, y)];
-                    spriteBatch.Draw (_texture, new Rectangle ((x * _cellSize) - halfSize, halfSize - (y * _cellSize), _cellSize, _cellSize), isAlive ? aliveColor : deadColor);
+                    spriteBatch.Draw (_texture, new Rectangle ((x * _cellSize) - halfSize, halfSize - (y * _cellSize) - _cellSize, _cellSize, _cellSize), isAlive ? aliveColor : deadColor);
                 }
             }
         }
