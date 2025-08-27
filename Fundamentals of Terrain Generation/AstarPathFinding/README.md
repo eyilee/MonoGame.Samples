@@ -1,6 +1,6 @@
 # AstarPathFinding
 A simple implementation of A* path finding algorithm.\
-This algorithm is used to connecting caves in [CellularAutomataCave](../CellularAutomataCave).
+This algorithm is used to connect caves in [CellularAutomataCave](../CellularAutomataCave).
 
 ## MonoGame Version
 3.8.4

@@ -6,6 +6,7 @@ Samples of algorithms introduced in [Terrain.pdf](https://www.cs.cmu.edu/~112-n2
 
 ## Cellular Automata Cave Generation
 [CellularAutomata](CellularAutomata)
+[AstarPathFinding](AstarPathFinding)
 
 ## Voronoi Noise Biome Generation
 
