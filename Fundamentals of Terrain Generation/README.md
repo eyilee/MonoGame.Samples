@@ -5,8 +5,9 @@ Samples of algorithms introduced in [Terrain.pdf](https://www.cs.cmu.edu/~112-n2
 [SineWave1DHill](SineWave1DHill)
 
 ## Cellular Automata Cave Generation
-[CellularAutomata](CellularAutomata)
-[AstarPathFinding](AstarPathFinding)
+[CellularAutomata](CellularAutomata)\
+[AstarPathFinding](AstarPathFinding)\
+[CellularAutomataCave](CellularAutomataCave)
 
 ## Voronoi Noise Biome Generation
 
