@@ -10,6 +10,7 @@ Samples of algorithms introduced in [Terrain.pdf](https://www.cs.cmu.edu/~112-n2
 [CellularAutomataCave](CellularAutomataCave)
 
 ## Voronoi Noise Biome Generation
+[VoronoiDiagram](VoronoiDiagram)
 
 ## Diamond Square Algorithm
 [MidpointDisplacement](MidpointDisplacement)\
