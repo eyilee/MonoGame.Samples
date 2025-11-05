@@ -1,2 +1,2 @@
-﻿using var game = new VoronoiDiagram.Core ();
+﻿using var game = new MonoGame.Samples.VoronoiDiagram.VoronoiDiagramGame ();
 game.Run ();

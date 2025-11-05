@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 
-namespace VoronoiDiagram
+namespace MonoGame.Samples.VoronoiDiagram
 {
     public class Edge
     {
@@ -200,7 +199,7 @@ namespace VoronoiDiagram
             return StartPoint.Y + (x - StartPoint.X) * _lerp;
         }
 
-        public bool HasValidIntersectPoint (Edge other)
+        public bool HasValidIntersectPoint (Edge? other)
         {
             if (other == null)
             {

@@ -1,16 +1,16 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace VoronoiDiagram
+namespace MonoGame.Samples.VoronoiDiagram
 {
     public class Parabola (Vector2 focus)
     {
         public Vector2 Focus = focus;
-        public Parabola LeftParabola;
-        public Parabola RightParabola;
-        public Edge LeftEdge;
-        public Edge RightEdge;
-        public Event CircleEvent;
+        public Parabola? LeftParabola;
+        public Parabola? RightParabola;
+        public Edge? LeftEdge;
+        public Edge? RightEdge;
+        public Event? CircleEvent;
 
         public static float GetFocalLength (Vector2 focus, float directrixY)
         {

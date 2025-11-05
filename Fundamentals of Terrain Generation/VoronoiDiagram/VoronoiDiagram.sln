@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36414.22 d17.14
+VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoronoiDiagram", "VoronoiDiagram\VoronoiDiagram.csproj", "{747DD4CC-7E15-44DA-9087-9C880C97024C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Samples.VoronoiDiagram", "VoronoiDiagram\MonoGame.Samples.VoronoiDiagram.csproj", "{747DD4CC-7E15-44DA-9087-9C880C97024C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Samples.Library", "..\..\Core\Core\MonoGame.Samples.Library.csproj", "{5CDF8199-5AAE-80DA-DC92-31A97A0F6BC3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{747DD4CC-7E15-44DA-9087-9C880C97024C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{747DD4CC-7E15-44DA-9087-9C880C97024C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{747DD4CC-7E15-44DA-9087-9C880C97024C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CDF8199-5AAE-80DA-DC92-31A97A0F6BC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CDF8199-5AAE-80DA-DC92-31A97A0F6BC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CDF8199-5AAE-80DA-DC92-31A97A0F6BC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CDF8199-5AAE-80DA-DC92-31A97A0F6BC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

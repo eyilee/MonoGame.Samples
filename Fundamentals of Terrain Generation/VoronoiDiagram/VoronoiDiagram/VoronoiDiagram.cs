@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace VoronoiDiagram
+namespace MonoGame.Samples.VoronoiDiagram
 {
     public class VoronoiDiagram
     {
@@ -37,19 +37,14 @@ namespace VoronoiDiagram
 
         private EStepState _state;
 
-        public VoronoiDiagram (int size, int pointCount)
+        public VoronoiDiagram (Texture2D texture, int size, int pointCount)
         {
-            if (_texture == null)
-            {
-                _texture = new Texture2D (Core.GraphicsDevice, 1, 1);
-                _texture.SetData ([Color.White]);
-            }
-
             if (size <= 0)
             {
                 throw new ArgumentException ("Size must be greater than 0", nameof (size));
             }
 
+            _texture = texture;
             _size = size;
             _pointCount = pointCount;
 
@@ -159,7 +154,7 @@ namespace VoronoiDiagram
 
             foreach (Edge edge in _edges)
             {
-                if (!siteEdges.TryGetValue (edge.LeftSite, out List<Edge> edges1))
+                if (!siteEdges.TryGetValue (edge.LeftSite, out List<Edge>? edges1))
                 {
                     edges1 = [];
                     siteEdges[edge.LeftSite] = edges1;
@@ -167,7 +162,7 @@ namespace VoronoiDiagram
 
                 edges1.Add (edge);
 
-                if (!siteEdges.TryGetValue (edge.RightSite, out List<Edge> edges2))
+                if (!siteEdges.TryGetValue (edge.RightSite, out List<Edge>? edges2))
                 {
                     edges2 = [];
                     siteEdges[edge.RightSite] = edges2;
@@ -184,7 +179,7 @@ namespace VoronoiDiagram
                 foreach (Edge edge in edges)
                 {
                     Vector2 twinSite = edge.LeftSite == site ? edge.RightSite : edge.LeftSite;
-                    if (!twinEdges.TryGetValue (twinSite, out Edge twinEdge))
+                    if (!twinEdges.TryGetValue (twinSite, out Edge? twinEdge))
                     {
                         twinEdges[twinSite] = edge;
                     }
@@ -230,6 +225,11 @@ namespace VoronoiDiagram
 
                 do
                 {
+                    if (orderedLines.Last is null)
+                    {
+                        throw new InvalidOperationException ("Ordered lines is empty");
+                    }
+
                     int index = lines.FindIndex (p => p.Item1 == orderedLines.Last.Value.Item2);
                     if (index >= 0)
                     {
@@ -245,6 +245,11 @@ namespace VoronoiDiagram
 
                 do
                 {
+                    if (orderedLines.First is null)
+                    {
+                        throw new InvalidOperationException ("Ordered lines is empty");
+                    }
+
                     int index = lines.FindIndex (p => p.Item2 == orderedLines.First.Value.Item1);
                     if (index >= 0)
                     {
@@ -454,9 +459,9 @@ namespace VoronoiDiagram
             int beachLineIndex = 0;
             for (int index = 0; index < _beachline.Count; index++)
             {
-                if (_beachline[index].RightEdge != null)
+                if (_beachline[index].RightEdge is Edge rightEdge)
                 {
-                    if (site.X >= _beachline[index].RightEdge.EndPoint.X)
+                    if (site.X >= rightEdge.EndPoint.X)
                     {
                         beachLineIndex = index + 1;
                     }
@@ -468,10 +473,10 @@ namespace VoronoiDiagram
 
         private void CheckCircleEvent (Parabola parabola)
         {
-            Edge leftEdge = parabola.LeftEdge;
-            Edge rightEdge = parabola.RightEdge;
+            Edge? leftEdge = parabola.LeftEdge;
+            Edge? rightEdge = parabola.RightEdge;
 
-            if (leftEdge == null || !leftEdge.HasValidIntersectPoint (rightEdge))
+            if (leftEdge is null || rightEdge is null || !leftEdge.HasValidIntersectPoint (rightEdge))
             {
                 return;
             }
@@ -496,11 +501,22 @@ namespace VoronoiDiagram
 
         private void HandleCircleEvent (Event circleEvent)
         {
-            Parabola parabola = circleEvent.Parabola;
-            Parabola leftParabola = parabola.LeftParabola;
-            Parabola rightParabola = parabola.RightParabola;
+            Parabola? parabola = circleEvent.Parabola;
+            if (parabola is null)
+            {
+                return;
+            }
 
-            if (leftParabola == null || rightParabola == null)
+            Parabola? leftParabola = parabola.LeftParabola;
+            Parabola? rightParabola = parabola.RightParabola;
+            if (leftParabola is null || rightParabola is null)
+            {
+                return;
+            }
+
+            Edge? leftEdge = parabola.LeftEdge;
+            Edge? rightEdge = parabola.RightEdge;
+            if (leftEdge is null || rightEdge is null)
             {
                 return;
             }
@@ -509,8 +525,8 @@ namespace VoronoiDiagram
             _edges.Add (edge);
             _vertices.Add (circleEvent.VertexPoint);
 
-            parabola.LeftEdge.SetVertex (circleEvent.VertexPoint);
-            parabola.RightEdge.SetVertex (circleEvent.VertexPoint);
+            leftEdge.SetVertex (circleEvent.VertexPoint);
+            rightEdge.SetVertex (circleEvent.VertexPoint);
 
             leftParabola.RightParabola = rightParabola;
             leftParabola.RightEdge = edge;
@@ -518,19 +534,19 @@ namespace VoronoiDiagram
             rightParabola.LeftParabola = leftParabola;
             rightParabola.LeftEdge = edge;
 
-            if (parabola.CircleEvent != null)
+            if (parabola.CircleEvent is not null)
             {
                 _events.Remove (parabola.CircleEvent);
                 parabola.CircleEvent = null;
             }
 
-            if (leftParabola.CircleEvent != null)
+            if (leftParabola.CircleEvent is not null)
             {
                 _events.Remove (leftParabola.CircleEvent);
                 leftParabola.CircleEvent = null;
             }
 
-            if (rightParabola.CircleEvent != null)
+            if (rightParabola.CircleEvent is not null)
             {
                 _events.Remove (rightParabola.CircleEvent);
                 rightParabola.CircleEvent = null;
