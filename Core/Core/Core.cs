@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace MonoGame.Samples.Core
+namespace MonoGame.Samples.Library
 {
     /// <summary>
     /// The core MonoGame application class.
@@ -15,27 +15,27 @@ namespace MonoGame.Samples.Core
         /// <summary>
         /// Gets the singleton instance of the Core application.
         /// </summary>
-        public static Core? Instance => s_instance;
+        public static Core Instance => s_instance!;
 
         /// <summary>
         /// Gets the graphics device manager.
         /// </summary>
-        public static GraphicsDeviceManager? Graphics { get; private set; }
+        public static GraphicsDeviceManager Graphics { get; private set; } = null!;
 
         /// <summary>
         /// Gets the content manager.
         /// </summary>
-        public static new ContentManager? Content { get; private set; }
+        public static new ContentManager Content { get; private set; } = null!;
 
         /// <summary>
         /// Gets the graphics device.
         /// </summary>
-        public static new GraphicsDevice? GraphicsDevice { get; private set; }
+        public static new GraphicsDevice GraphicsDevice { get; private set; } = null!;
 
         /// <summary>
         /// Gets the sprite batch for rendering 2D graphics.
         /// </summary>
-        public static SpriteBatch? SpriteBatch { get; private set; }
+        public static SpriteBatch SpriteBatch { get; private set; } = null!;
 
         /// <summary>
         /// Initializes a new instance of the Core class.
@@ -65,8 +65,6 @@ namespace MonoGame.Samples.Core
 
             Content = base.Content;
             Content.RootDirectory = "Content";
-
-            IsMouseVisible = true;
         }
 
         /// <summary>
@@ -74,11 +72,11 @@ namespace MonoGame.Samples.Core
         /// </summary>
         protected override void Initialize ()
         {
-            base.Initialize ();
-
             GraphicsDevice = base.GraphicsDevice;
 
             SpriteBatch = new SpriteBatch (GraphicsDevice);
+
+            base.Initialize ();
         }
     }
 }
