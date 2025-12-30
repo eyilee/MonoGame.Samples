@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Samples.Library;
+using MonoGame.Samples.Library.Input;
 
 namespace MonoGame.Samples.VoronoiDiagram
 {
@@ -15,8 +16,6 @@ namespace MonoGame.Samples.VoronoiDiagram
         private float _scale = 1f;
         private bool _isPaused = false;
 
-        private KeyboardState _prevKeyboardState;
-        private KeyboardState _currentKeyboardState;
         private MouseState _prevMouseState;
         private MouseState _currentMouseState;
 
@@ -37,6 +36,10 @@ namespace MonoGame.Samples.VoronoiDiagram
             _texture.SetData ([Color.White]);
 
             _voronoiDiagram = new VoronoiDiagram (_texture, size: 256, pointCount: 5);
+
+            Input.SubscribeKeyPressed (Keys.N, Next);
+            Input.SubscribeKeyPressed (Keys.P, Pause);
+            Input.SubscribeKeyPressed (Keys.R, Redo);
         }
 
         protected override void Update (GameTime gameTime)
@@ -46,29 +49,10 @@ namespace MonoGame.Samples.VoronoiDiagram
                 Exit ();
             }
 
-            _prevKeyboardState = _currentKeyboardState;
-            _currentKeyboardState = Keyboard.GetState ();
+            Input.Update (gameTime);
+
             _prevMouseState = _currentMouseState;
             _currentMouseState = Mouse.GetState ();
-
-            if (_prevKeyboardState.IsKeyUp (Keys.N) && _currentKeyboardState.IsKeyDown (Keys.N))
-            {
-                _nextStepTime = 0f;
-
-                _voronoiDiagram?.Reset ();
-            }
-
-            if (_prevKeyboardState.IsKeyUp (Keys.P) && _currentKeyboardState.IsKeyDown (Keys.P))
-            {
-                _isPaused = !_isPaused;
-            }
-
-            if (_prevKeyboardState.IsKeyUp (Keys.R) && _currentKeyboardState.IsKeyDown (Keys.R))
-            {
-                _nextStepTime = 0f;
-
-                _voronoiDiagram?.Redo ();
-            }
 
             float scrollWheel = _currentMouseState.ScrollWheelValue - _prevMouseState.ScrollWheelValue;
             if (scrollWheel != 0)
@@ -105,6 +89,25 @@ namespace MonoGame.Samples.VoronoiDiagram
             SpriteBatch.End ();
 
             base.Draw (gameTime);
+        }
+
+        private void Next (object? sender, KeyboardEventArgs eventArgs)
+        {
+            _nextStepTime = 0f;
+
+            _voronoiDiagram?.Reset ();
+        }
+
+        private void Pause (object? sender, KeyboardEventArgs eventArgs)
+        {
+            _isPaused = !_isPaused;
+        }
+
+        private void Redo (object? sender, KeyboardEventArgs eventArgs)
+        {
+            _nextStepTime = 0f;
+
+            _voronoiDiagram?.Redo ();
         }
     }
 }
