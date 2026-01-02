@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Samples.Library;
 using MonoGame.Samples.Library.Input;
+using System;
 
 namespace MonoGame.Samples.VoronoiDiagram
 {
@@ -13,11 +14,10 @@ namespace MonoGame.Samples.VoronoiDiagram
 
         private readonly float _stepTime = 0.06f;
         private float _nextStepTime = 0;
+        private int _translationX = 0;
+        private int _translationY = 0;
         private float _scale = 1f;
         private bool _isPaused = false;
-
-        private MouseState _prevMouseState;
-        private MouseState _currentMouseState;
 
         public VoronoiDiagramGame ()
             : base ("VoronoiDiagram", 1280, 720, false)
@@ -40,6 +40,8 @@ namespace MonoGame.Samples.VoronoiDiagram
             Input.SubscribeKeyPressed (Keys.N, Next);
             Input.SubscribeKeyPressed (Keys.P, Pause);
             Input.SubscribeKeyPressed (Keys.R, Redo);
+            Input.SubscribeDrag (MouseButtons.Left, Drag);
+            Input.SubscribeWheelMoved (WheelMoved);
         }
 
         protected override void Update (GameTime gameTime)
@@ -50,15 +52,6 @@ namespace MonoGame.Samples.VoronoiDiagram
             }
 
             Input.Update (gameTime);
-
-            _prevMouseState = _currentMouseState;
-            _currentMouseState = Mouse.GetState ();
-
-            float scrollWheel = _currentMouseState.ScrollWheelValue - _prevMouseState.ScrollWheelValue;
-            if (scrollWheel != 0)
-            {
-                _scale += scrollWheel / 1000f;
-            }
 
             if (!_isPaused)
             {
@@ -82,7 +75,7 @@ namespace MonoGame.Samples.VoronoiDiagram
             int halfWidth = GraphicsDevice.PresentationParameters.BackBufferWidth / 2;
             int halfHeight = GraphicsDevice.PresentationParameters.BackBufferHeight / 2;
             Matrix transformMatrix = Matrix.CreateScale (_scale, _scale, 1f)
-                * Matrix.CreateTranslation (halfWidth, halfHeight, 0f);
+                * Matrix.CreateTranslation (halfWidth + _translationX, halfHeight + _translationY, 0f);
 
             SpriteBatch.Begin (transformMatrix: transformMatrix);
             _voronoiDiagram?.Draw (SpriteBatch);
@@ -108,6 +101,20 @@ namespace MonoGame.Samples.VoronoiDiagram
             _nextStepTime = 0f;
 
             _voronoiDiagram?.Redo ();
+        }
+
+        private void Drag (object? sender, MouseEventArgs eventArgs)
+        {
+            _translationX = Math.Clamp (_translationX + eventArgs.PositionDelta.X, -50, 50);
+            _translationY = Math.Clamp (_translationY + eventArgs.PositionDelta.Y, -50, 50);
+        }
+
+        private void WheelMoved (object? sender, MouseEventArgs eventArgs)
+        {
+            if (eventArgs.ScrollWheelDelta != 0)
+            {
+                _scale = Math.Clamp (_scale + eventArgs.ScrollWheelDelta / 1000f, 0.1f, 4f);
+            }
         }
     }
 }
