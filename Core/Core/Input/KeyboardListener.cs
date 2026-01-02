@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Linq;
 
 namespace MonoGame.Samples.Library.Input
@@ -100,19 +99,6 @@ namespace MonoGame.Samples.Library.Input
         private KeyboardState _currentState;
         private KeyboardState _previousState;
 
-        private readonly Dictionary<Keys, KeyboardObserver> _pressedObservers = [];
-        private readonly Dictionary<Keys, KeyboardObserver> _releasedObservers = [];
-
-        /// <summary>
-        /// Occurs when a key is pressed while the control has focus.
-        /// </summary>
-        public event EventHandler<KeyboardEventArgs>? KeyPressed;
-
-        /// <summary>
-        /// Occurs when a key is released while the control has focus.
-        /// </summary>
-        public event EventHandler<KeyboardEventArgs>? KeyReleased;
-
         /// <summary>
         /// Determines whether the specified key is currently pressed.
         /// </summary>
@@ -127,64 +113,26 @@ namespace MonoGame.Samples.Library.Input
         /// <returns>true if the specified key is not pressed; otherwise, false.</returns>
         public bool IsKeyUp (Keys key) => _currentState.IsKeyUp (key);
 
-        /// <summary>
-        /// Updates the keyboard input state and raises events for key presses and releases since the last update.
-        /// </summary>
-        /// <remarks>Call this method once per game loop iteration to ensure that keyboard input events
-        /// are processed accurately. Failing to call this method regularly may result in missed or delayed input
-        /// events.</remarks>
-        /// <param name="gameTime">The current game time, typically used to synchronize input updates with the game loop.</param>
-        public void Update (GameTime gameTime)
-        {
-            _currentState = Keyboard.GetState ();
+        private readonly KeyboardObserver _pressedObserver = new ();
+        private readonly KeyboardObserver _releasedObserver = new ();
+        private readonly Dictionary<Keys, KeyboardObserver> _pressedObservers = [];
+        private readonly Dictionary<Keys, KeyboardObserver> _releasedObservers = [];
 
-            RaisePressedEvents (_currentState);
-            RaiseReleasedEvents (_currentState);
+        public void SubscribePressed (EventHandler<KeyboardEventArgs> handler) => _pressedObserver.Observers += handler;
 
-            _previousState = _currentState;
-        }
+        public void UnsubscribePressed (EventHandler<KeyboardEventArgs> handler) => _pressedObserver.Observers -= handler;
 
-        private void RaisePressedEvents (KeyboardState currentState)
-        {
-            IEnumerable<Keys> pressedKeys = _keys.Where (key => currentState.IsKeyDown (key) && _previousState.IsKeyUp (key));
+        public void SubscribeReleased (EventHandler<KeyboardEventArgs> handler) => _releasedObserver.Observers += handler;
 
-            foreach (Keys key in pressedKeys)
-            {
-                KeyboardEventArgs eventArgs = new (key, currentState);
+        public void UnsubscribeReleased (EventHandler<KeyboardEventArgs> handler) => _releasedObserver.Observers -= handler;
 
-                KeyPressed?.Invoke (this, eventArgs);
+        public void SubscribePressed (Keys key, EventHandler<KeyboardEventArgs> handler) => Subscribe (_pressedObservers, key, handler);
 
-                if (_pressedObservers.TryGetValue (key, out KeyboardObserver? value))
-                {
-                    value.Notify (this, eventArgs);
-                }
-            }
-        }
+        public void UnsubscribePressed (Keys key, EventHandler<KeyboardEventArgs> handler) => Unsubscribe (_pressedObservers, key, handler);
 
-        private void RaiseReleasedEvents (KeyboardState currentState)
-        {
-            IEnumerable<Keys> releasedKeys = _keys.Where (key => currentState.IsKeyUp (key) && _previousState.IsKeyDown (key));
+        public void SubscribeReleased (Keys key, EventHandler<KeyboardEventArgs> handler) => Subscribe (_releasedObservers, key, handler);
 
-            foreach (Keys key in releasedKeys)
-            {
-                KeyboardEventArgs eventArgs = new (key, currentState);
-
-                KeyReleased?.Invoke (this, eventArgs);
-
-                if (_releasedObservers.TryGetValue (key, out KeyboardObserver? value))
-                {
-                    value.Notify (this, eventArgs);
-                }
-            }
-        }
-
-        public void SubscribeKeyPressed (Keys key, EventHandler<KeyboardEventArgs> handler) => Subscribe (_pressedObservers, key, handler);
-
-        public void UnsubscribeKeyPressed (Keys key, EventHandler<KeyboardEventArgs> handler) => Unsubscribe (_pressedObservers, key, handler);
-
-        public void SubscribeKeyReleased (Keys key, EventHandler<KeyboardEventArgs> handler) => Subscribe (_releasedObservers, key, handler);
-
-        public void UnsubscribeKeyReleased (Keys key, EventHandler<KeyboardEventArgs> handler) => Unsubscribe (_releasedObservers, key, handler);
+        public void UnsubscribeReleased (Keys key, EventHandler<KeyboardEventArgs> handler) => Unsubscribe (_releasedObservers, key, handler);
 
         private static void Subscribe (Dictionary<Keys, KeyboardObserver> observers, Keys key, EventHandler<KeyboardEventArgs> handler)
         {
@@ -208,6 +156,57 @@ namespace MonoGame.Samples.Library.Input
                 {
                     observers.Remove (key);
                 }
+            }
+        }
+
+        private static void Notify (Dictionary<Keys, KeyboardObserver> observers, Keys key, object? sender, KeyboardEventArgs eventArgs)
+        {
+            if (observers.TryGetValue (key, out KeyboardObserver? value))
+            {
+                value.Notify (sender, eventArgs);
+            }
+        }
+
+        /// <summary>
+        /// Updates the keyboard input state and raises events for key presses and releases since the last update.
+        /// </summary>
+        /// <remarks>Call this method once per game loop iteration to ensure that keyboard input events
+        /// are processed accurately. Failing to call this method regularly may result in missed or delayed input
+        /// events.</remarks>
+        /// <param name="gameTime">The current game time, typically used to synchronize input updates with the game loop.</param>
+        public void Update (GameTime gameTime)
+        {
+            _currentState = Keyboard.GetState ();
+
+            RaisePressedEvents ();
+            RaiseReleasedEvents ();
+
+            _previousState = _currentState;
+        }
+
+        private void RaisePressedEvents ()
+        {
+            IEnumerable<Keys> pressedKeys = _keys.Where (key => _currentState.IsKeyDown (key) && _previousState.IsKeyUp (key));
+
+            foreach (Keys key in pressedKeys)
+            {
+                KeyboardEventArgs eventArgs = new (key, _currentState);
+                _pressedObserver.Notify (this, eventArgs);
+
+                Notify (_pressedObservers, key, this, eventArgs);
+            }
+        }
+
+        private void RaiseReleasedEvents ()
+        {
+            IEnumerable<Keys> releasedKeys = _keys.Where (key => _currentState.IsKeyUp (key) && _previousState.IsKeyDown (key));
+
+            foreach (Keys key in releasedKeys)
+            {
+                KeyboardEventArgs eventArgs = new (key, _currentState);
+                _releasedObserver.Notify (this, eventArgs);
+
+                Notify (_releasedObservers, key, this, eventArgs);
             }
         }
     }
