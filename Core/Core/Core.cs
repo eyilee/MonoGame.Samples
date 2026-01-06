@@ -33,6 +33,16 @@ namespace MonoGame.Samples.Library
         public static new GraphicsDevice GraphicsDevice { get; private set; } = null!;
 
         /// <summary>
+        /// Gets the current width of the screen in pixels.
+        /// </summary>
+        public static int ScreenWidth => Graphics.PreferredBackBufferWidth;
+
+        /// <summary>
+        /// Gets the current height of the screen in pixels.
+        /// </summary>
+        public static int ScreenHeight => Graphics.PreferredBackBufferHeight;
+
+        /// <summary>
         /// Gets the sprite batch for rendering 2D graphics.
         /// </summary>
         public static SpriteBatch SpriteBatch { get; private set; } = null!;
