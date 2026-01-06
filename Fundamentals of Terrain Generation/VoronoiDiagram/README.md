@@ -11,8 +11,8 @@ Then construct polygons by vertices.
 Windows (Desktop GL)
 
 ## Usage
-Press "N" key to generate next map.
-Press "P" key to pause the process.
+Press "N" key to generate next map.\
+Press "P" key to pause the process.\
 Press "R" key to redo the current map.
 
 ## Reference
