@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36811.4 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Samples.PerlinNoise", "PerlinNoise\MonoGame.Samples.PerlinNoise.csproj", "{DBA37583-3F4F-4800-9B30-F8F55DBF7283}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Samples.Library", "..\..\Core\Core\MonoGame.Samples.Library.csproj", "{5CDF8199-5AAE-80DA-DC92-31A97A0F6BC3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DBA37583-3F4F-4800-9B30-F8F55DBF7283}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBA37583-3F4F-4800-9B30-F8F55DBF7283}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBA37583-3F4F-4800-9B30-F8F55DBF7283}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBA37583-3F4F-4800-9B30-F8F55DBF7283}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CDF8199-5AAE-80DA-DC92-31A97A0F6BC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CDF8199-5AAE-80DA-DC92-31A97A0F6BC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CDF8199-5AAE-80DA-DC92-31A97A0F6BC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CDF8199-5AAE-80DA-DC92-31A97A0F6BC3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {93B352B4-AFC6-40E3-91BD-9C8D6ECDE730}
+	EndGlobalSection
+EndGlobal
