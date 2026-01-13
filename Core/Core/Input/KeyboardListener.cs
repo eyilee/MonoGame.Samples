@@ -77,7 +77,7 @@ namespace MonoGame.Samples.Library.Input
         }
     }
 
-    public class KeyboardObserver
+    internal class KeyboardObserver
     {
         public event EventHandler<KeyboardEventArgs>? Observers;
 
@@ -86,31 +86,15 @@ namespace MonoGame.Samples.Library.Input
         public void Notify (object? sender, KeyboardEventArgs eventArgs) => Observers?.Invoke (sender, eventArgs);
     }
 
-    /// <summary>
-    /// Listens for keyboard input and raises events when keys are pressed or released while the control has focus.
-    /// </summary>
-    /// <remarks>Call the Update method once per game update cycle to ensure that keyboard events are detected
-    /// and handled correctly. The KeyboardListener raises the KeyPressed and KeyReleased events in response to changes
-    /// in keyboard state. Failing to call Update regularly may result in missed input events.</remarks>
-    public class KeyboardListener
+    internal class KeyboardListener
     {
         private readonly IEnumerable<Keys> _keys = Enum.GetValues (typeof (Keys)).Cast<Keys> ();
 
         private KeyboardState _currentState;
         private KeyboardState _previousState;
 
-        /// <summary>
-        /// Determines whether the specified key is currently pressed.
-        /// </summary>
-        /// <param name="key">The key to check for a pressed state.</param>
-        /// <returns>true if the specified key is currently pressed; otherwise, false.</returns>
         public bool IsKeyDown (Keys key) => _currentState.IsKeyDown (key);
 
-        /// <summary>
-        /// Determines whether the specified key is currently in the up (not pressed) state.
-        /// </summary>
-        /// <param name="key">The key to check for the up state.</param>
-        /// <returns>true if the specified key is not pressed; otherwise, false.</returns>
         public bool IsKeyUp (Keys key) => _currentState.IsKeyUp (key);
 
         private readonly KeyboardObserver _pressedObserver = new ();
@@ -167,13 +151,6 @@ namespace MonoGame.Samples.Library.Input
             }
         }
 
-        /// <summary>
-        /// Updates the keyboard input state and raises events for key presses and releases since the last update.
-        /// </summary>
-        /// <remarks>Call this method once per game loop iteration to ensure that keyboard input events
-        /// are processed accurately. Failing to call this method regularly may result in missed or delayed input
-        /// events.</remarks>
-        /// <param name="gameTime">The current game time, typically used to synchronize input updates with the game loop.</param>
         public void Update (GameTime gameTime)
         {
             _currentState = Keyboard.GetState ();

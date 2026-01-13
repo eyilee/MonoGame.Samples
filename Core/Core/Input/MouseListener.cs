@@ -6,26 +6,74 @@ using System.Linq;
 
 namespace MonoGame.Samples.Library.Input
 {
+    /// <summary>
+    /// Specifies constants that define mouse buttons.
+    /// </summary>
     public enum MouseButtons
     {
+        /// <summary>
+        /// Indicates that no options or values are set.
+        /// </summary>
         None,
+
+        /// <summary>
+        /// Specifies the left mouse button.
+        /// </summary>
         Left,
+
+        /// <summary>
+        /// Specifies the middle mouse button.
+        /// </summary>
         Middle,
+
+        /// <summary>
+        /// Specifies the right mouse button.
+        /// </summary>
         Right,
+
+        /// <summary>
+        /// Represents the first extended mouse button (typically XButton1).
+        /// </summary>
         XButton1,
+
+        /// <summary>
+        /// Represents the second extended mouse button (typically 'XButton2').
+        /// </summary>
         XButton2,
     }
 
+    /// <summary>
+    /// Provides data for mouse-related events, including button state, position, movement delta, and scroll wheel
+    /// changes.
+    /// </summary>
     public class MouseEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets the mouse button associated with the event.
+        /// </summary>
         public MouseButtons Button { get; init; }
 
+        /// <summary>
+        /// Gets the position as a Point.
+        /// </summary>
         public Point Position { get; init; }
 
+        /// <summary>
+        /// Gets the change in position as a Point.
+        /// </summary>
         public Point PositionDelta { get; init; }
 
+        /// <summary>
+        /// Gets the amount the scroll wheel has moved.
+        /// </summary>
         public int ScrollWheelDelta { get; init; }
 
+        /// <summary>
+        /// Initializes a new instance of the MouseEventArgs class with the specified mouse button and mouse states.
+        /// </summary>
+        /// <param name="button">The mouse button associated with the event.</param>
+        /// <param name="currentState">The current state of the mouse.</param>
+        /// <param name="previousState">The previous state of the mouse.</param>
         public MouseEventArgs (MouseButtons button, MouseState currentState, MouseState previousState)
         {
             Button = button;
@@ -38,7 +86,7 @@ namespace MonoGame.Samples.Library.Input
         }
     }
 
-    public class MouseObserver
+    internal class MouseObserver
     {
         public event EventHandler<MouseEventArgs>? Observers;
 
@@ -47,7 +95,7 @@ namespace MonoGame.Samples.Library.Input
         public void Notify (object? sender, MouseEventArgs eventArgs) => Observers?.Invoke (sender, eventArgs);
     }
 
-    public class ExtendedButtonState
+    internal class ExtendedButtonState
     {
         public Point PressedPosition { get; private set; } = Point.Zero;
 
@@ -110,7 +158,7 @@ namespace MonoGame.Samples.Library.Input
         }
     }
 
-    public class MouseListener
+    internal class MouseListener
     {
         private readonly IEnumerable<MouseButtons> _buttons = Enum.GetValues (typeof (MouseButtons)).Cast<MouseButtons> ();
 
@@ -118,6 +166,7 @@ namespace MonoGame.Samples.Library.Input
         private MouseState _currentState;
         private MouseState _previousState;
 
+        // TODO: Make configurable
         public int DoubleClickMilliseconds { get; set; } = 300;
         public int DragThreshold { get; set; } = 5;
 
