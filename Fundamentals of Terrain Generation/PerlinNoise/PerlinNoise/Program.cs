@@ -1,2 +1,2 @@
-﻿using var game = new MonoGame.Samples.PerlinNoise.PerlinNoiseGame ();
+﻿using var game = new MonoGame.Samples.PerlinNoise.Main ();
 game.Run ();

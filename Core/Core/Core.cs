@@ -1,60 +1,38 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using MonoGame.Samples.Library.Input;
 using System;
 
 namespace MonoGame.Samples.Library
 {
-    /// <summary>
-    /// The core MonoGame application class.
-    /// </summary>
     public class Core : Game
     {
         private static Core? s_instance;
 
-        /// <summary>
-        /// Gets the singleton instance of the Core application.
-        /// </summary>
         public static Core Instance => s_instance!;
 
-        /// <summary>
-        /// Gets the graphics device manager.
-        /// </summary>
+        private static Scene? s_activeScene;
+
+        private static Scene? s_nextScene;
+
         public static GraphicsDeviceManager Graphics { get; private set; } = null!;
 
-        /// <summary>
-        /// Gets the content manager.
-        /// </summary>
         public static new ContentManager Content { get; private set; } = null!;
 
-        /// <summary>
-        /// Gets the graphics device.
-        /// </summary>
         public static new GraphicsDevice GraphicsDevice { get; private set; } = null!;
 
-        /// <summary>
-        /// Gets the current width of the screen in pixels.
-        /// </summary>
         public static int ScreenWidth => Graphics.PreferredBackBufferWidth;
 
-        /// <summary>
-        /// Gets the current height of the screen in pixels.
-        /// </summary>
         public static int ScreenHeight => Graphics.PreferredBackBufferHeight;
 
-        /// <summary>
-        /// Gets the sprite batch for rendering 2D graphics.
-        /// </summary>
         public static SpriteBatch SpriteBatch { get; private set; } = null!;
 
-        /// <summary>
-        /// Initializes a new instance of the Core class.
-        /// </summary>
-        /// <param name="title">Title of the window.</param>
-        /// <param name="width">Width of the window.</param>
-        /// <param name="height">Height of the window.</param>
-        /// <param name="isFullScreen">Indicates whether the window should be fullscreen.</param>
-        /// <exception cref="InvalidOperationException">Thrown if an instance of Core already exists.</exception>
+        public static InputManager Input { get; private set; } = null!;
+
+        public static bool ExitOnEscape { get; set; }
+
         public Core (string title, int width, int height, bool isFullScreen)
         {
             if (s_instance != null)
@@ -75,18 +53,68 @@ namespace MonoGame.Samples.Library
 
             Content = base.Content;
             Content.RootDirectory = "Content";
+
+            IsMouseVisible = true;
+
+            ExitOnEscape = true;
         }
 
-        /// <summary>
-        /// Initializes the core components of the application.
-        /// </summary>
         protected override void Initialize ()
         {
             GraphicsDevice = base.GraphicsDevice;
 
             SpriteBatch = new SpriteBatch (GraphicsDevice);
 
+            Input = new InputManager ();
+
             base.Initialize ();
+        }
+
+        protected override void Update (GameTime gameTime)
+        {
+            Input.Update (gameTime);
+
+            if (ExitOnEscape && Input.Keyboard.WasJustPressed (Keys.Escape))
+            {
+                Exit ();
+            }
+
+            if (s_nextScene != null)
+            {
+                TransitionScene ();
+            }
+
+            s_activeScene?.Update (gameTime);
+
+            base.Update (gameTime);
+        }
+
+        protected override void Draw (GameTime gameTime)
+        {
+            s_activeScene?.Draw (gameTime);
+
+            base.Draw (gameTime);
+        }
+
+        public static void ChangeScene (Scene next)
+        {
+            if (s_activeScene != next)
+            {
+                s_nextScene = next;
+            }
+        }
+
+        private static void TransitionScene ()
+        {
+            s_activeScene?.Dispose ();
+
+            GC.Collect ();
+
+            s_activeScene = s_nextScene;
+
+            s_nextScene = null;
+
+            s_activeScene?.Initialize ();
         }
     }
 }

@@ -37,14 +37,16 @@ namespace MonoGame.Samples.VoronoiDiagram
 
         private EStepState _state;
 
-        public VoronoiDiagram (Texture2D texture, int size, int pointCount)
+        public VoronoiDiagram (GraphicsDevice graphicsDevice, int size, int pointCount)
         {
             if (size <= 0)
             {
                 throw new ArgumentException ("Size must be greater than 0", nameof (size));
             }
 
-            _texture = texture;
+            _texture = new Texture2D (graphicsDevice, 1, 1);
+            _texture.SetData ([Color.White]);
+
             _size = size;
             _pointCount = pointCount;
 

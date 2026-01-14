@@ -6,84 +6,25 @@ using System.Linq;
 
 namespace MonoGame.Samples.Library.Input
 {
-    /// <summary>
-    /// Specifies constants that define mouse buttons.
-    /// </summary>
     public enum MouseButtons
     {
-        /// <summary>
-        /// Indicates that no options or values are set.
-        /// </summary>
         None,
-
-        /// <summary>
-        /// Specifies the left mouse button.
-        /// </summary>
         Left,
-
-        /// <summary>
-        /// Specifies the middle mouse button.
-        /// </summary>
         Middle,
-
-        /// <summary>
-        /// Specifies the right mouse button.
-        /// </summary>
         Right,
-
-        /// <summary>
-        /// Represents the first extended mouse button (typically XButton1).
-        /// </summary>
         XButton1,
-
-        /// <summary>
-        /// Represents the second extended mouse button (typically 'XButton2').
-        /// </summary>
         XButton2,
     }
 
-    /// <summary>
-    /// Provides data for mouse-related events, including button state, position, movement delta, and scroll wheel
-    /// changes.
-    /// </summary>
-    public class MouseEventArgs : EventArgs
+    public class MouseEventArgs (MouseButtons button, MouseState currentState, MouseState previousState) : EventArgs
     {
-        /// <summary>
-        /// Gets the mouse button associated with the event.
-        /// </summary>
-        public MouseButtons Button { get; init; }
+        public MouseButtons Button { get; init; } = button;
 
-        /// <summary>
-        /// Gets the position as a Point.
-        /// </summary>
-        public Point Position { get; init; }
+        public Point Position { get; init; } = new Point (currentState.X, currentState.Y);
 
-        /// <summary>
-        /// Gets the change in position as a Point.
-        /// </summary>
-        public Point PositionDelta { get; init; }
+        public Point PositionDelta { get; init; } = new Point (currentState.X - previousState.X, currentState.Y - previousState.Y);
 
-        /// <summary>
-        /// Gets the amount the scroll wheel has moved.
-        /// </summary>
-        public int ScrollWheelDelta { get; init; }
-
-        /// <summary>
-        /// Initializes a new instance of the MouseEventArgs class with the specified mouse button and mouse states.
-        /// </summary>
-        /// <param name="button">The mouse button associated with the event.</param>
-        /// <param name="currentState">The current state of the mouse.</param>
-        /// <param name="previousState">The previous state of the mouse.</param>
-        public MouseEventArgs (MouseButtons button, MouseState currentState, MouseState previousState)
-        {
-            Button = button;
-
-            Position = new Point (currentState.X, currentState.Y);
-
-            PositionDelta = new Point (currentState.X - previousState.X, currentState.Y - previousState.Y);
-
-            ScrollWheelDelta = currentState.ScrollWheelValue - previousState.ScrollWheelValue;
-        }
+        public int ScrollWheelDelta { get; init; } = currentState.ScrollWheelValue - previousState.ScrollWheelValue;
     }
 
     internal class MouseObserver
@@ -101,13 +42,13 @@ namespace MonoGame.Samples.Library.Input
 
         public TimeSpan ReleasedTime { get; private set; } = TimeSpan.Zero;
 
-        public bool IsDoubleClick { get; private set; } = false;
+        public bool IsDoubleClick { get; private set; }
 
-        public bool IsDragBegin { get; private set; } = false;
+        public bool IsDragBegin { get; private set; }
 
-        public bool IsDrag { get; private set; } = false;
+        public bool IsDrag { get; private set; }
 
-        public bool IsDragEnd { get; private set; } = false;
+        public bool IsDragEnd { get; private set; }
 
         public void Pressed (Point poition)
         {
@@ -158,7 +99,7 @@ namespace MonoGame.Samples.Library.Input
         }
     }
 
-    internal class MouseListener
+    public class MouseListener
     {
         private readonly IEnumerable<MouseButtons> _buttons = Enum.GetValues (typeof (MouseButtons)).Cast<MouseButtons> ();
 
@@ -187,6 +128,10 @@ namespace MonoGame.Samples.Library.Input
         public bool IsButtonDown (MouseButtons button) => GetButtonState (_currentState, button) == ButtonState.Pressed;
 
         public bool IsButtonUp (MouseButtons button) => GetButtonState (_currentState, button) == ButtonState.Released;
+
+        public bool WasJustPressed (MouseButtons button) => GetButtonState (_currentState, button) == ButtonState.Pressed && GetButtonState (_previousState, button) == ButtonState.Released;
+
+        public bool WasJustReleased (MouseButtons button) => GetButtonState (_currentState, button) == ButtonState.Released && GetButtonState (_previousState, button) == ButtonState.Pressed;
 
         private static ButtonState GetButtonState (MouseState currentState, MouseButtons button) => button switch
         {
@@ -281,14 +226,14 @@ namespace MonoGame.Samples.Library.Input
         public void Update (GameTime gameTime)
         {
             _currentTime = gameTime;
+
+            _previousState = _currentState;
             _currentState = Mouse.GetState ();
 
             RaisePressedEvents ();
             RaiseReleasedEvents ();
             RaiseMovedEvents ();
             RaiseWheelMovedEvents ();
-
-            _previousState = _currentState;
         }
 
         private void RaisePressedEvents ()

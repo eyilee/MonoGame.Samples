@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace MonoGame.Samples.Library.Canvas
 {
@@ -20,13 +21,14 @@ namespace MonoGame.Samples.Library.Canvas
 
         public Color[] Pixels { get; init; }
 
-        public int OffsetX { get; set; } = 0;
+        public int OffsetX { get; set; }
 
-        public int OffsetY { get; set; } = 0;
+        public int OffsetY { get; set; }
 
-        public Canvas (Texture2D texture2D, int width, int height, int pixelSize = 1)
+        public Canvas (GraphicsDevice graphicsDevice, int width, int height, int pixelSize = 1)
         {
-            _texture = texture2D;
+            _texture = new Texture2D (graphicsDevice, 1, 1);
+            _texture.SetData ([Color.White]);
 
             if (width <= 0)
             {
@@ -53,20 +55,7 @@ namespace MonoGame.Samples.Library.Canvas
 
         public Color GetPixel (int x, int y) => Pixels[GetIndex (x, y)];
 
-        private int GetIndex (int x, int y)
-        {
-            if (x < 0 || x >= Width)
-            {
-                throw new ArgumentOutOfRangeException (nameof (x), $"Pixel coordinates ({x}, {y}) are out of bounds.");
-            }
-
-            if (y < 0 || y >= Height)
-            {
-                throw new ArgumentOutOfRangeException (nameof (y), $"Pixel coordinates ({x}, {y}) are out of bounds.");
-            }
-
-            return y * Width + x;
-        }
+        private int GetIndex (int x, int y) => y * Width + x;
 
         public void Clear (Color? color) => Array.Fill (Pixels, color ?? Color.Transparent);
 

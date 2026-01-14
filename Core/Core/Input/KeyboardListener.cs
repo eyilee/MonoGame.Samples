@@ -6,54 +6,21 @@ using System.Linq;
 
 namespace MonoGame.Samples.Library.Input
 {
-    /// <summary>
-    /// Specifies keyboard modifier keys that can be combined to indicate the state of Control, Shift, and Alt keys.
-    /// </summary>
     [Flags]
     public enum KeyboardModifiers
     {
-        /// <summary>
-        /// Indicates that no options are set.
-        /// </summary>
         None = 0,
-
-        /// <summary>
-        /// Specifies the Control modifier key.
-        /// </summary>
         Control = 1,
-
-        /// <summary>
-        /// Specifies the Shift modifier key.
-        /// </summary>
         Shift = 2,
-
-        /// <summary>
-        /// Specifies the Alt modifier key.
-        /// </summary>
         Alt = 4,
     }
 
-    /// <summary>
-    /// Provides data for keyboard-related events, including information about the key pressed and any active modifier
-    /// keys.
-    /// </summary>
     public class KeyboardEventArgs : EventArgs
     {
-        /// <summary>
-        /// Gets the keyboard key associated with this instance.
-        /// </summary>
         public Keys Key { get; init; }
 
-        /// <summary>
-        /// Gets the set of keyboard modifier keys (such as Shift, Ctrl, or Alt) that are active.
-        /// </summary>
         public KeyboardModifiers Modifiers { get; init; }
 
-        /// <summary>
-        /// Initializes a new instance of the KeyboardEventArgs class with the specified key and keyboard state.
-        /// </summary>
-        /// <param name="key">The key that triggered the keyboard event.</param>
-        /// <param name="keyboardState">The current state of the keyboard, used to determine which modifier keys are pressed.</param>
         public KeyboardEventArgs (Keys key, KeyboardState keyboardState)
         {
             Key = key;
@@ -86,7 +53,7 @@ namespace MonoGame.Samples.Library.Input
         public void Notify (object? sender, KeyboardEventArgs eventArgs) => Observers?.Invoke (sender, eventArgs);
     }
 
-    internal class KeyboardListener
+    public class KeyboardListener
     {
         private readonly IEnumerable<Keys> _keys = Enum.GetValues (typeof (Keys)).Cast<Keys> ();
 
@@ -96,6 +63,10 @@ namespace MonoGame.Samples.Library.Input
         public bool IsKeyDown (Keys key) => _currentState.IsKeyDown (key);
 
         public bool IsKeyUp (Keys key) => _currentState.IsKeyUp (key);
+
+        public bool WasJustPressed (Keys key) => _currentState.IsKeyDown (key) && _previousState.IsKeyUp (key);
+
+        public bool WasJustReleased (Keys key) => _currentState.IsKeyUp (key) && _previousState.IsKeyDown (key);
 
         private readonly KeyboardObserver _pressedObserver = new ();
         private readonly KeyboardObserver _releasedObserver = new ();
@@ -153,12 +124,11 @@ namespace MonoGame.Samples.Library.Input
 
         public void Update (GameTime gameTime)
         {
+            _previousState = _currentState;
             _currentState = Keyboard.GetState ();
 
             RaisePressedEvents ();
             RaiseReleasedEvents ();
-
-            _previousState = _currentState;
         }
 
         private void RaisePressedEvents ()
