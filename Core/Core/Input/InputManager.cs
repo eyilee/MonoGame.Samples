@@ -1,22 +1,21 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace MonoGame.Samples.Library.Input
+namespace MonoGame.Samples.Library.Input;
+
+public class InputManager
 {
-    public class InputManager
+    public KeyboardListener Keyboard { get; init; }
+    public MouseListener Mouse { get; init; }
+
+    public InputManager ()
     {
-        public KeyboardListener Keyboard { get; init; }
-        public MouseListener Mouse { get; init; }
+        Keyboard = new KeyboardListener ();
+        Mouse = new MouseListener ();
+    }
 
-        public InputManager ()
-        {
-            Keyboard = new KeyboardListener ();
-            Mouse = new MouseListener ();
-        }
-
-        public void Update (GameTime gameTime)
-        {
-            Keyboard.Update (gameTime);
-            Mouse.Update (gameTime);
-        }
+    public void Update (GameTime gameTime)
+    {
+        Keyboard.Update (gameTime);
+        Mouse.Update (gameTime);
     }
 }

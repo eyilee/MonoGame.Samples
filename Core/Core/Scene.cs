@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Samples.Library.Input;
 using System;
 
 namespace MonoGame.Samples.Library;
@@ -7,6 +9,12 @@ namespace MonoGame.Samples.Library;
 public abstract class Scene : IDisposable
 {
     protected ContentManager Content { get; }
+
+    public static GraphicsDevice GraphicsDevice => Core.GraphicsDevice;
+
+    public static SpriteBatch SpriteBatch => Core.SpriteBatch;
+
+    public static InputManager Input => Core.Input;
 
     public bool IsDisposed { get; private set; }
 

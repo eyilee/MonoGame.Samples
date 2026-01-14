@@ -1,84 +1,82 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Runtime.CompilerServices;
 
-namespace MonoGame.Samples.Library.Canvas
+namespace MonoGame.Samples.Library.Canvas;
+
+public class Canvas
 {
-    public class Canvas
+    private readonly Texture2D _texture;
+
+    public int Width { get; init; }
+
+    public int Height { get; init; }
+
+    public int PixelSize { get; init; }
+
+    public int PixelWidth => Width * PixelSize;
+
+    public int PixelHeight => Height * PixelSize;
+
+    public Color[] Pixels { get; init; }
+
+    public int OffsetX { get; set; }
+
+    public int OffsetY { get; set; }
+
+    public Canvas (GraphicsDevice graphicsDevice, int width, int height, int pixelSize = 1)
     {
-        private readonly Texture2D _texture;
+        _texture = new Texture2D (graphicsDevice, 1, 1);
+        _texture.SetData ([Color.White]);
 
-        public int Width { get; init; }
-
-        public int Height { get; init; }
-
-        public int PixelSize { get; init; }
-
-        public int PixelWidth => Width * PixelSize;
-
-        public int PixelHeight => Height * PixelSize;
-
-        public Color[] Pixels { get; init; }
-
-        public int OffsetX { get; set; }
-
-        public int OffsetY { get; set; }
-
-        public Canvas (GraphicsDevice graphicsDevice, int width, int height, int pixelSize = 1)
+        if (width <= 0)
         {
-            _texture = new Texture2D (graphicsDevice, 1, 1);
-            _texture.SetData ([Color.White]);
-
-            if (width <= 0)
-            {
-                throw new ArgumentOutOfRangeException (nameof (width), "Width must be greater than zero.");
-            }
-
-            if (height <= 0)
-            {
-                throw new ArgumentOutOfRangeException (nameof (height), "Height must be greater than zero.");
-            }
-
-            if (pixelSize <= 0)
-            {
-                throw new ArgumentOutOfRangeException (nameof (pixelSize), "Pixel size must be greater than zero.");
-            }
-
-            Width = width;
-            Height = height;
-            PixelSize = pixelSize;
-            Pixels = new Color[Width * Height];
+            throw new ArgumentOutOfRangeException (nameof (width), "Width must be greater than zero.");
         }
 
-        public void SetPixel (int x, int y, Color color) => Pixels[GetIndex (x, y)] = color;
-
-        public Color GetPixel (int x, int y) => Pixels[GetIndex (x, y)];
-
-        private int GetIndex (int x, int y) => y * Width + x;
-
-        public void Clear (Color? color) => Array.Fill (Pixels, color ?? Color.Transparent);
-
-        public void SetOffset (int offsetX, int offsetY)
+        if (height <= 0)
         {
-            OffsetX = offsetX;
-            OffsetY = offsetY;
+            throw new ArgumentOutOfRangeException (nameof (height), "Height must be greater than zero.");
         }
 
-        public void Translate (int offsetX, int offsetY)
+        if (pixelSize <= 0)
         {
-            OffsetX += offsetX;
-            OffsetY += offsetY;
+            throw new ArgumentOutOfRangeException (nameof (pixelSize), "Pixel size must be greater than zero.");
         }
 
-        public void Draw (SpriteBatch spriteBatch)
+        Width = width;
+        Height = height;
+        PixelSize = pixelSize;
+        Pixels = new Color[Width * Height];
+    }
+
+    public void SetPixel (int x, int y, Color color) => Pixels[GetIndex (x, y)] = color;
+
+    public Color GetPixel (int x, int y) => Pixels[GetIndex (x, y)];
+
+    private int GetIndex (int x, int y) => y * Width + x;
+
+    public void Clear (Color? color) => Array.Fill (Pixels, color ?? Color.Transparent);
+
+    public void SetOffset (int offsetX, int offsetY)
+    {
+        OffsetX = offsetX;
+        OffsetY = offsetY;
+    }
+
+    public void Translate (int offsetX, int offsetY)
+    {
+        OffsetX += offsetX;
+        OffsetY += offsetY;
+    }
+
+    public void Draw (SpriteBatch spriteBatch)
+    {
+        for (int x = 0; x < Width; x++)
         {
-            for (int x = 0; x < Width; x++)
+            for (int y = 0; y < Height; y++)
             {
-                for (int y = 0; y < Height; y++)
-                {
-                    spriteBatch.Draw (_texture, new Rectangle (OffsetX + x * PixelSize, OffsetY + y * PixelSize, PixelSize, PixelSize), GetPixel (x, y));
-                }
+                spriteBatch.Draw (_texture, new Rectangle (OffsetX + x * PixelSize, OffsetY + y * PixelSize, PixelSize, PixelSize), GetPixel (x, y));
             }
         }
     }
