@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Samples.Library;
+using MonoGame.Samples.Library.Canvas;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +11,8 @@ namespace MonoGame.Samples.VoronoiDiagram;
 public class VoronoiDiagram
 {
     private static readonly Random _random = new ();
+
+    private readonly Canvas? _canvas;
 
     private readonly Texture2D _texture;
     private readonly int _cellSize = 2;
@@ -43,6 +47,9 @@ public class VoronoiDiagram
         {
             throw new ArgumentException ("Size must be greater than 0", nameof (size));
         }
+
+        _canvas = new Canvas (graphicsDevice, size, size, _cellSize);
+        _canvas.SetOffset (-_canvas.PixelWidth / 2, -_canvas.PixelHeight / 2);
 
         _texture = new Texture2D (graphicsDevice, 1, 1);
         _texture.SetData ([Color.White]);
@@ -322,6 +329,40 @@ public class VoronoiDiagram
         }
 
         _state = EStepState.Finished;
+
+        for (int x = 0; x < _size; x++)
+        {
+            for (int y = 0; y < _size; y++)
+            {
+                float minDistance = float.MaxValue;
+
+                Vector2? nearestSite = null;
+                foreach (Vector2 site in _points)
+                {
+                    float distance = Vector2.DistanceSquared (new Vector2 (x + 0.5f, y + 0.5f), site);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        nearestSite = site;
+                    }
+                }
+
+                if (nearestSite.HasValue)
+                {
+                    float hue = 360f * _points.IndexOf (nearestSite.Value) / _points.Count;
+                    _canvas?.SetPixel (x, y, ColorUtility.HSVToRGB (hue, 0.6f, 1));
+                }
+                else
+                {
+                    _canvas?.SetPixel (x, y, Color.White);
+                }
+            }
+        }
+
+        foreach (Vector2 site in _points)
+        {
+            _canvas?.SetPixel ((int)MathF.Round (site.X), (int)MathF.Round (site.Y), Color.Black);
+        }
     }
 
     private void SortEvents ()
@@ -611,6 +652,8 @@ public class VoronoiDiagram
 
         if (_state == EStepState.Finished)
         {
+            _canvas?.Draw (spriteBatch);
+
             foreach (Polygon polygon in _polygons)
             {
                 for (int i = 0; i < polygon.Points.Count; i++)

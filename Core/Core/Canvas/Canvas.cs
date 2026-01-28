@@ -26,23 +26,12 @@ public class Canvas
 
     public Canvas (GraphicsDevice graphicsDevice, int width, int height, int pixelSize = 1)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero (width, nameof (width));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero (height, nameof (height));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero (pixelSize, nameof (pixelSize));
+
         _texture = new Texture2D (graphicsDevice, 1, 1);
         _texture.SetData ([Color.White]);
-
-        if (width <= 0)
-        {
-            throw new ArgumentOutOfRangeException (nameof (width), "Width must be greater than zero.");
-        }
-
-        if (height <= 0)
-        {
-            throw new ArgumentOutOfRangeException (nameof (height), "Height must be greater than zero.");
-        }
-
-        if (pixelSize <= 0)
-        {
-            throw new ArgumentOutOfRangeException (nameof (pixelSize), "Pixel size must be greater than zero.");
-        }
 
         Width = width;
         Height = height;
