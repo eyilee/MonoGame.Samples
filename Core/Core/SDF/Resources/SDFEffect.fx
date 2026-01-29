@@ -1,5 +1,4 @@
 ﻿#if OPENGL
-#define SV_POSITION POSITION
 #define VS_SHADERMODEL vs_3_0
 #define PS_SHADERMODEL ps_3_0
 #else
@@ -11,11 +10,12 @@ matrix WorldViewProjection;
 
 struct VSInput
 {
-    float2 VertexPos : POSITION0; // quad [-0.5..0.5]
+    float2 VertexPos : POSITION0;
     float2 InstancePos : TEXCOORD1;
     float2 InstanceScale : TEXCOORD2;
     float4 ShapeData0 : TEXCOORD3;
-    float4 ShapeMask0 : TEXCOORD4;
+    float4 ShapeData1 : TEXCOORD4;
+    float4 ShapeMask0 : TEXCOORD5;
     float4 Color : COLOR0;
 };
 
@@ -24,7 +24,8 @@ struct PSInput
     float4 Position : SV_POSITION;
     float2 LocalPos : TEXCOORD0;
     float4 ShapeData0 : TEXCOORD1;
-    float4 ShapeMask0 : TEXCOORD2;
+    float4 ShapeData1 : TEXCOORD2;
+    float4 ShapeMask0 : TEXCOORD3;
     float4 Color : COLOR0;
 };
 
@@ -35,6 +36,7 @@ PSInput MainVS (VSInput input)
     o.Position = mul (float4 (worldPos, 0, 1), WorldViewProjection);
     o.LocalPos = input.VertexPos;
     o.ShapeData0 = input.ShapeData0;
+    o.ShapeData1 = input.ShapeData1;
     o.ShapeMask0 = input.ShapeMask0;
     o.Color = input.Color;
     return o;
@@ -50,26 +52,33 @@ float sdBox (float2 p, float2 size)
     float2 d = abs (p) - size;
     return length (max (d, 0)) + min (max (d.x, d.y), 0);
 }
-float sdLine (float2 p, float2 a, float2 b)
+
+float sdLine (float2 p, float2 a, float2 b, float radius)
 {
-    float2 pa = p - a, ba = b - a;
+    float2 pa = p - a;
+    float2 ba = b - a;
     float h = saturate (dot (pa, ba) / dot (ba, ba));
-    return length (pa - ba * h);
+    float distance = length (pa - ba * h);
+    if (distance > radius)
+        return 0;
+    return 1;
+    //float aa = fwidth (distance);
+    //return smoothstep (radius + aa, radius - aa, distance);
 }
 
 float4 MainPS (PSInput i) : SV_Target
 {
     float4 distances;
-    distances.x = sdLine (i.LocalPos, float2 (0, 0), float2 (i.ShapeData0.x, i.ShapeData0.y));
-    distances.y = sdCircle (i.LocalPos, i.ShapeData0.z);
-    distances.z = sdBox (i.LocalPos, i.ShapeData0.xy);
+    distances.x = sdLine (i.Position.xy, i.ShapeData0.xy, i.ShapeData0.zw, i.ShapeData1.x);
+    //distances.y = sdCircle (i.LocalPos, i.ShapeData0.z);
+    //distances.z = sdBox (i.LocalPos, i.ShapeData0.xy);
+    distances.y = 0;
+    distances.z = 0;
     distances.w = 0;
 
-    float dist = dot (distances, i.ShapeMask0);
-    float aa = fwidth (dist);
-    float alpha = 1 - smoothstep (0, aa, dist);
+    float alpha = dot (distances, i.ShapeMask0);
 
-    return float4 (i.Color.rgb, i.Color.a * alpha);
+    return float4 (i.Color.rgb, alpha);
 }
 
 technique SDFEffect
