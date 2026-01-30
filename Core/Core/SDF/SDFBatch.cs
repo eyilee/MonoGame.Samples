@@ -96,18 +96,66 @@ namespace MonoGame.Samples.Library.SDF
 
         public void DrawLine (Vector2 start, Vector2 end, Color color, float thickness = 1f)
         {
-            Vector2 min = Vector2.Min (start, end);
-            Vector2 max = Vector2.Max (start, end);
-            float width = max.X - min.X + thickness;
-            float height = max.Y - min.Y + thickness;
-
             ref SDFInstance instance = ref _batcher.CreateInstance ();
             instance.Position = (start + end) * 0.5f;
-            instance.Scale = new Vector2 (width, height);
+            instance.Scale = (end - start) + new Vector2 (thickness, thickness);
             instance.ShapeData0 = new Vector4 (start.X, start.Y, end.X, end.Y);
             instance.ShapeData1 = new Vector4 (thickness / 2f, 0f, 0f, 0f);
             instance.ShapeMask0 = new Vector4 (0f, 1f, 0f, 0f);
             instance.Color = color;
+        }
+
+        public void DrawParabora (Vector2 focus, Vector2 directrix, float minX, float maxX, float minY, float maxY, Color color, float thickness = 1)
+        {
+            Vector2 direction = focus - directrix;
+            Vector2 top = RayClipping (directrix, direction, minX, maxX, minY, maxY);
+            Vector2 left = RayClipping (directrix, new Vector2 (-direction.Y, direction.X), minX, maxX, minY, maxY);
+            Vector2 right = RayClipping (directrix, new Vector2 (direction.Y, -direction.X), minX, maxX, minY, maxY);
+            Vector2 min = Vector2.Min (Vector2.Min (top, left), right);
+            Vector2 max = Vector2.Max (Vector2.Max (top, left), right);
+
+            ref SDFInstance instance = ref _batcher.CreateInstance ();
+            instance.Position = (min + max) * 0.5f;
+            instance.Scale = (max - min);
+            instance.ShapeData0 = new Vector4 (focus.X, focus.Y, directrix.X, directrix.Y);
+            instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
+            instance.ShapeMask0 = new Vector4 (0f, 0f, 1f, 0f);
+            instance.Color = color;
+        }
+
+        public static Vector2 RayClipping (Vector2 point, Vector2 direction, float minX, float maxX, float minY, float maxY)
+        {
+            float max = float.MaxValue;
+
+            if (Math.Abs (direction.X) < float.Epsilon)
+            {
+                if (point.X < minX || point.X > maxX)
+                {
+                    return point;
+                }
+            }
+            else
+            {
+                max = MathF.Min (max, direction.X > 0
+                    ? (maxX - point.X) / direction.X
+                    : (minX - point.X) / direction.X);
+            }
+
+            if (Math.Abs (direction.Y) < float.Epsilon)
+            {
+                if (point.Y < minY || point.Y > maxY)
+                {
+                    return point;
+                }
+            }
+            else
+            {
+                max = MathF.Min (max, direction.Y > 0
+                    ? (maxY - point.Y) / direction.Y
+                    : (minY - point.Y) / direction.Y);
+            }
+
+            return point + direction * max;
         }
     }
 }

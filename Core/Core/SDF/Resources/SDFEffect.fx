@@ -33,7 +33,7 @@ PSInput MainVS (VSInput input)
 {
     PSInput o;
     
-    float2 localPos = input.VertexPos * 256;
+    float2 localPos = input.VertexPos * input.Scale;
     float2 worldPos = localPos + input.Position;
     
     o.Position = mul (float4 (worldPos, 0, 1), WorldViewProjection);
@@ -51,12 +51,24 @@ float sdfCircle (float2 p, float radius)
     return length (p) - radius;
 }
 
-float sdfLine (float2 p, float2 a, float2 b, float radius)
+float sdfLine (float2 p, float2 a, float2 b, float thickness)
 {
     float2 pa = p - a;
     float2 ba = b - a;
     float h = saturate (dot (pa, ba) / dot (ba, ba));
-    return length (pa - ba * h) - radius;
+    return length (pa - ba * h) - thickness;
+}
+
+float sdfParabola (float2 p, float2 f, float2 d, float thickness)
+{
+    float2 fd = f - d;
+    float2 a = d + float2 (-fd.y, fd.x);
+    float2 b = d + float2 (fd.y, -fd.x);
+    
+    float2 pa = p - a;
+    float2 ba = b - a;
+    float h = dot (pa, ba) / dot (ba, ba);
+    return abs (length (pa - ba * h) - length (p - f)) - thickness;
 }
 
 float4 MainPS (PSInput i) : SV_Target
@@ -64,7 +76,7 @@ float4 MainPS (PSInput i) : SV_Target
     float4 distances;
     distances.x = sdfCircle (i.LocalPos, i.ShapeData0.x);
     distances.y = sdfLine (i.LocalPos, i.ShapeData0.xy, i.ShapeData0.zw, i.ShapeData1.x);
-    distances.z = 0;
+    distances.z = sdfParabola (i.LocalPos, i.ShapeData0.xy, i.ShapeData0.zw, i.ShapeData1.x);
     distances.w = 0;
     
     float distance = dot (distances, i.ShapeMask0);
