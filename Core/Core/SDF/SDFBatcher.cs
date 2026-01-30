@@ -26,7 +26,7 @@ namespace MonoGame.Samples.Library.SDF
             _indexBuffer.SetData (new ushort[]
             {
                 0, 1, 2,
-                2, 1, 3
+                1, 3, 2
             });
 
             _vertexBuffer = new VertexBuffer (graphicsDevice, SDFQuad.VertexDeclaration, 4, BufferUsage.WriteOnly);
@@ -41,8 +41,7 @@ namespace MonoGame.Samples.Library.SDF
 
             _batchCount = 0;
 
-            _instances = [];
-            Array.Resize (ref _instances, InitBatchSize);
+            _instances = new SDFInstance[InitBatchSize];
         }
 
         public ref SDFInstance CreateInstance ()
@@ -70,7 +69,7 @@ namespace MonoGame.Samples.Library.SDF
 
             while (batchCount > 0)
             {
-                int startIndex = batchIndex * 4;
+                int startIndex = batchIndex;
 
                 int batchCountToProcess = batchCount;
                 if (batchCountToProcess > MaxBatchSize)
@@ -95,11 +94,11 @@ namespace MonoGame.Samples.Library.SDF
             }
 
             int instanceCount = endIndex - startIndex;
-            _instanceBuffer.SetData (_instances.AsSpan ().Slice (startIndex, instanceCount).ToArray ());
+            _instanceBuffer.SetData (_instances, startIndex, instanceCount, SetDataOptions.Discard);
 
             _graphicsDevice.Indices = _indexBuffer;
             _graphicsDevice.SetVertexBuffers (new VertexBufferBinding (_vertexBuffer, 0, 0), new VertexBufferBinding (_instanceBuffer, 0, 1));
-            _graphicsDevice.DrawInstancedPrimitives (PrimitiveType.TriangleStrip, 0, 0, 2, instanceCount);
+            _graphicsDevice.DrawInstancedPrimitives (PrimitiveType.TriangleList, 0, 0, 2, instanceCount);
         }
     }
 }

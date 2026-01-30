@@ -30,7 +30,7 @@ namespace MonoGame.Samples.Library.SDF
             new VertexElement (16, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 3),
             new VertexElement (32, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 4),
             new VertexElement (48, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 5),
-            new VertexElement (64, VertexElementFormat.Color, VertexElementUsage.Color, 0)
+            new VertexElement (64, VertexElementFormat.Color, VertexElementUsage.Color, 1)
             );
 
         readonly VertexDeclaration IVertexType.VertexDeclaration => VertexDeclaration;
@@ -77,10 +77,21 @@ namespace MonoGame.Samples.Library.SDF
 
             _graphicsDevice.BlendState = BlendState.AlphaBlend;
             _graphicsDevice.DepthStencilState = DepthStencilState.None;
-            _graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
+            _graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
             _graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
             _batcher.DrawBatch ();
+        }
+
+        public void DrawCircle (Vector2 center, float radius, Color color)
+        {
+            ref SDFInstance instance = ref _batcher.CreateInstance ();
+            instance.Position = center;
+            instance.Scale = new Vector2 (radius * 2f);
+            instance.ShapeData0 = new Vector4 (radius, 0f, 0f, 0f);
+            instance.ShapeData1 = Vector4.Zero;
+            instance.ShapeMask0 = new Vector4 (1f, 0f, 0f, 0f);
+            instance.Color = color;
         }
 
         public void DrawLine (Vector2 start, Vector2 end, Color color, float thickness = 1f)
@@ -94,8 +105,8 @@ namespace MonoGame.Samples.Library.SDF
             instance.Position = (start + end) * 0.5f;
             instance.Scale = new Vector2 (width, height);
             instance.ShapeData0 = new Vector4 (start.X, start.Y, end.X, end.Y);
-            instance.ShapeData1 = new Vector4 (thickness, 0, 0, 0);
-            instance.ShapeMask0 = new Vector4 (1, 0, 0, 0);
+            instance.ShapeData1 = new Vector4 (thickness / 2f, 0f, 0f, 0f);
+            instance.ShapeMask0 = new Vector4 (0f, 1f, 0f, 0f);
             instance.Color = color;
         }
     }

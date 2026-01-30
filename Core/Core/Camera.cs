@@ -41,7 +41,6 @@ public class Camera
         get => _zoom;
         set
         {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero (value, nameof (value));
             _zoom = float.Clamp (value, _minZoom, _maxZoom);
         }
     }
@@ -100,6 +99,13 @@ public class Camera
             Matrix.CreateScale (_zoom, _zoom, 1f) *
             Matrix.CreateTranslation (Origin.X, Origin.Y, 0f);
     }
+
+    public Matrix GetProjectionMatrix ()
+    {
+        return Matrix.CreateOrthographicOffCenter (0, Width, Height, 0, 0, 1);
+    }
+
+    public Matrix GetViewProjectionMatrix () => GetViewMatrix () * GetProjectionMatrix ();
 
     public void EnableWorldBounds (Rectangle worldBounds)
     {
