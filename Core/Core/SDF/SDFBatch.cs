@@ -83,13 +83,13 @@ namespace MonoGame.Samples.Library.SDF
             _batcher.DrawBatch ();
         }
 
-        public void DrawCircle (Vector2 center, float radius, Color color)
+        public void DrawCircle (Vector2 center, float radius, Color color, float thickness = 1f)
         {
             ref SDFInstance instance = ref _batcher.CreateInstance ();
             instance.Position = center;
-            instance.Scale = new Vector2 (radius * 2f);
+            instance.Scale = new Vector2 (radius * 2f) + new Vector2 (thickness * 2f);
             instance.ShapeData0 = new Vector4 (radius, 0f, 0f, 0f);
-            instance.ShapeData1 = Vector4.Zero;
+            instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
             instance.ShapeMask0 = new Vector4 (1f, 0f, 0f, 0f);
             instance.Color = color;
         }
@@ -98,9 +98,9 @@ namespace MonoGame.Samples.Library.SDF
         {
             ref SDFInstance instance = ref _batcher.CreateInstance ();
             instance.Position = (start + end) * 0.5f;
-            instance.Scale = (end - start) + new Vector2 (thickness, thickness);
-            instance.ShapeData0 = new Vector4 (start.X, start.Y, end.X, end.Y);
-            instance.ShapeData1 = new Vector4 (thickness / 2f, 0f, 0f, 0f);
+            instance.Scale = (end - start) + new Vector2 (thickness * 2f);
+            instance.ShapeData0 = new Vector4 (start.X - instance.Position.X, start.Y - instance.Position.Y, end.X - instance.Position.X, end.Y - instance.Position.Y);
+            instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
             instance.ShapeMask0 = new Vector4 (0f, 1f, 0f, 0f);
             instance.Color = color;
         }
@@ -108,16 +108,17 @@ namespace MonoGame.Samples.Library.SDF
         public void DrawParabora (Vector2 focus, Vector2 directrix, float minX, float maxX, float minY, float maxY, Color color, float thickness = 1)
         {
             Vector2 direction = focus - directrix;
-            Vector2 top = RayClipping (directrix, direction, minX, maxX, minY, maxY);
-            Vector2 left = RayClipping (directrix, new Vector2 (-direction.Y, direction.X), minX, maxX, minY, maxY);
-            Vector2 right = RayClipping (directrix, new Vector2 (direction.Y, -direction.X), minX, maxX, minY, maxY);
-            Vector2 min = Vector2.Min (Vector2.Min (top, left), right);
-            Vector2 max = Vector2.Max (Vector2.Max (top, left), right);
+            Vector2 topBound = RayClipping (directrix, direction, minX, maxX, minY, maxY);
+            Vector2 leftBound = RayClipping (directrix, new Vector2 (direction.Y, -direction.X), minX, maxX, minY, maxY);
+            Vector2 rightBound = RayClipping (directrix, new Vector2 (-direction.Y, direction.X), minX, maxX, minY, maxY);
+
+            Vector2 min = Vector2.Min (Vector2.Min (topBound, leftBound), rightBound);
+            Vector2 max = Vector2.Max (Vector2.Max (topBound, leftBound), rightBound);
 
             ref SDFInstance instance = ref _batcher.CreateInstance ();
             instance.Position = (min + max) * 0.5f;
             instance.Scale = (max - min);
-            instance.ShapeData0 = new Vector4 (focus.X, focus.Y, directrix.X, directrix.Y);
+            instance.ShapeData0 = new Vector4 (focus.X - instance.Position.X, focus.Y - instance.Position.Y, directrix.X - instance.Position.X, directrix.Y - instance.Position.Y);
             instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
             instance.ShapeMask0 = new Vector4 (0f, 0f, 1f, 0f);
             instance.Color = color;

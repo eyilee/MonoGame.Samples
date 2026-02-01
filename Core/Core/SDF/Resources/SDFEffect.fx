@@ -32,10 +32,10 @@ struct PSInput
 PSInput MainVS (VSInput input)
 {
     PSInput o;
-    
+
     float2 localPos = input.VertexPos * input.Scale;
     float2 worldPos = localPos + input.Position;
-    
+
     o.Position = mul (float4 (worldPos, 0, 1), WorldViewProjection);
     o.LocalPos = localPos;
     o.ShapeData0 = input.ShapeData0;
@@ -48,41 +48,56 @@ PSInput MainVS (VSInput input)
 
 float sdfCircle (float2 p, float radius)
 {
-    return length (p) - radius;
+    return abs (length (p) - radius);
 }
 
-float sdfLine (float2 p, float2 a, float2 b, float thickness)
+float sdfLine (float2 p, float2 a, float2 b)
 {
     float2 pa = p - a;
     float2 ba = b - a;
     float h = saturate (dot (pa, ba) / dot (ba, ba));
-    return length (pa - ba * h) - thickness;
+    return length (pa - ba * h);
 }
 
-float sdfParabola (float2 p, float2 f, float2 d, float thickness)
+float sdfParabolaImplicit (float2 p, float2 f, float2 d)
 {
-    float2 fd = f - d;
-    float2 a = d + float2 (-fd.y, fd.x);
-    float2 b = d + float2 (fd.y, -fd.x);
-    
-    float2 pa = p - a;
-    float2 ba = b - a;
-    float h = dot (pa, ba) / dot (ba, ba);
-    return abs (length (pa - ba * h) - length (p - f)) - thickness;
+    return length (p - f) - dot (p - d, normalize (f - d));
+}
+
+// not SDF exact, but good enough for rendering
+float sdfParabola (float2 p, float2 f, float2 d)
+{
+    float distance = sdfParabolaImplicit (p, f, d);
+
+    float eps = 0.5f;
+
+    float2 gradient;
+    gradient.x = sdfParabolaImplicit (p + float2 (eps, 0), f, d) - distance;
+    gradient.y = sdfParabolaImplicit (p + float2 (0, eps), f, d) - distance;
+
+    return abs (distance / max (length (gradient), eps));
 }
 
 float4 MainPS (PSInput i) : SV_Target
 {
     float4 distances;
     distances.x = sdfCircle (i.LocalPos, i.ShapeData0.x);
-    distances.y = sdfLine (i.LocalPos, i.ShapeData0.xy, i.ShapeData0.zw, i.ShapeData1.x);
-    distances.z = sdfParabola (i.LocalPos, i.ShapeData0.xy, i.ShapeData0.zw, i.ShapeData1.x);
+    distances.y = sdfLine (i.LocalPos, i.ShapeData0.xy, i.ShapeData0.zw);
+    distances.z = sdfParabola (i.LocalPos, i.ShapeData0.xy, i.ShapeData0.zw);
     distances.w = 0;
-    
+
     float distance = dot (distances, i.ShapeMask0);
 
+    float4 thicknesses;
+    thicknesses.x = i.ShapeData1.x;
+    thicknesses.y = i.ShapeData1.x;
+    thicknesses.z = i.ShapeData1.x;
+    thicknesses.w = 0;
+
+    float thickness = dot (thicknesses, i.ShapeMask0) / 2;
+
     float w = fwidth (distance);
-    float alpha = 1 - smoothstep (0, w, distance);
+    float alpha = 1 - smoothstep (thickness - w, thickness + w, distance);
 
     return float4 (i.Color.rgb * alpha, i.Color.a * alpha);
 }
