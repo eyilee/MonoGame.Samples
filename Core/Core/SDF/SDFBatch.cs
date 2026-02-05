@@ -18,6 +18,7 @@ namespace MonoGame.Samples.Library.SDF
     struct SDFInstance : IVertexType
     {
         public Vector2 Position;
+        public float Rotation;
         public Vector2 Scale;
         public Vector4 ShapeData0;
         public Vector4 ShapeData1;
@@ -26,11 +27,12 @@ namespace MonoGame.Samples.Library.SDF
 
         public static readonly VertexDeclaration VertexDeclaration = new (
             new VertexElement (0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 1),
-            new VertexElement (8, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 2),
-            new VertexElement (16, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 3),
-            new VertexElement (32, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 4),
-            new VertexElement (48, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 5),
-            new VertexElement (64, VertexElementFormat.Color, VertexElementUsage.Color, 1)
+            new VertexElement (8, VertexElementFormat.Single, VertexElementUsage.TextureCoordinate, 2),
+            new VertexElement (12, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 3),
+            new VertexElement (20, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 4),
+            new VertexElement (36, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 5),
+            new VertexElement (52, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 6),
+            new VertexElement (68, VertexElementFormat.Color, VertexElementUsage.Color, 1)
             );
 
         readonly VertexDeclaration IVertexType.VertexDeclaration => VertexDeclaration;
@@ -87,6 +89,7 @@ namespace MonoGame.Samples.Library.SDF
         {
             ref SDFInstance instance = ref _batcher.CreateInstance ();
             instance.Position = center;
+            instance.Rotation = 0f;
             instance.Scale = new Vector2 (radius * 2f) + new Vector2 (thickness * 2f);
             instance.ShapeData0 = new Vector4 (radius, 0f, 0f, 0f);
             instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
@@ -98,65 +101,29 @@ namespace MonoGame.Samples.Library.SDF
         {
             ref SDFInstance instance = ref _batcher.CreateInstance ();
             instance.Position = (start + end) * 0.5f;
-            instance.Scale = (end - start) + new Vector2 (thickness * 2f);
+            instance.Rotation = 0f;
+            instance.Scale = new Vector2 (MathF.Abs (end.X - start.X) + thickness * 2f, MathF.Abs (end.Y - start.Y) + thickness * 2f);
             instance.ShapeData0 = new Vector4 (start.X - instance.Position.X, start.Y - instance.Position.Y, end.X - instance.Position.X, end.Y - instance.Position.Y);
             instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
             instance.ShapeMask0 = new Vector4 (0f, 1f, 0f, 0f);
             instance.Color = color;
         }
 
-        public void DrawParabora (Vector2 focus, Vector2 directrix, float minX, float maxX, float minY, float maxY, Color color, float thickness = 1)
+        public void DrawParabora (Vector2 focus, Vector2 directrix, Vector2 min, Vector2 max, Color color, float thickness = 1)
         {
             Vector2 direction = focus - directrix;
-            Vector2 topBound = RayClipping (directrix, direction, minX, maxX, minY, maxY);
-            Vector2 leftBound = RayClipping (directrix, new Vector2 (direction.Y, -direction.X), minX, maxX, minY, maxY);
-            Vector2 rightBound = RayClipping (directrix, new Vector2 (-direction.Y, direction.X), minX, maxX, minY, maxY);
-
-            Vector2 min = Vector2.Min (Vector2.Min (topBound, leftBound), rightBound);
-            Vector2 max = Vector2.Max (Vector2.Max (topBound, leftBound), rightBound);
+            Vector2 vertex = (focus + directrix) * 0.5f;
+            Vector2 center = (min + max) * 0.5f;
+            Vector2 offset = vertex - center;
 
             ref SDFInstance instance = ref _batcher.CreateInstance ();
-            instance.Position = (min + max) * 0.5f;
+            instance.Position = center;
+            instance.Rotation = MathF.Atan2 (direction.Y, direction.X) - MathF.PI / 2f;
             instance.Scale = (max - min);
-            instance.ShapeData0 = new Vector4 (focus.X - instance.Position.X, focus.Y - instance.Position.Y, directrix.X - instance.Position.X, directrix.Y - instance.Position.Y);
+            instance.ShapeData0 = new Vector4 (1f / (4f * Vector2.Distance (focus, vertex)), offset.X, offset.Y, 0f);
             instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
             instance.ShapeMask0 = new Vector4 (0f, 0f, 1f, 0f);
             instance.Color = color;
-        }
-
-        public static Vector2 RayClipping (Vector2 point, Vector2 direction, float minX, float maxX, float minY, float maxY)
-        {
-            float max = float.MaxValue;
-
-            if (Math.Abs (direction.X) < float.Epsilon)
-            {
-                if (point.X < minX || point.X > maxX)
-                {
-                    return point;
-                }
-            }
-            else
-            {
-                max = MathF.Min (max, direction.X > 0
-                    ? (maxX - point.X) / direction.X
-                    : (minX - point.X) / direction.X);
-            }
-
-            if (Math.Abs (direction.Y) < float.Epsilon)
-            {
-                if (point.Y < minY || point.Y > maxY)
-                {
-                    return point;
-                }
-            }
-            else
-            {
-                max = MathF.Min (max, direction.Y > 0
-                    ? (maxY - point.Y) / direction.Y
-                    : (minY - point.Y) / direction.Y);
-            }
-
-            return point + direction * max;
         }
     }
 }
