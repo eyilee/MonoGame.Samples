@@ -2,128 +2,119 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace MonoGame.Samples.Library.SDF
+namespace MonoGame.Samples.Library.SDF;
+
+public class SDFBatch : IDisposable
 {
-    struct SDFQuad : IVertexType
+    private bool _disposed;
+
+    private readonly GraphicsDevice _graphicsDevice;
+    private readonly SDFEffect _effect;
+    private readonly EffectPass _effectPass;
+    private readonly SDFBatcher _batcher;
+
+    private bool _beginCalled;
+
+    public SDFBatch (GraphicsDevice graphicsDevice)
     {
-        public Vector2 Position;
-
-        public static readonly VertexDeclaration VertexDeclaration = new (
-                new VertexElement (0, VertexElementFormat.Vector2, VertexElementUsage.Position, 0)
-            );
-
-        readonly VertexDeclaration IVertexType.VertexDeclaration => VertexDeclaration;
+        _graphicsDevice = graphicsDevice;
+        _effect = new SDFEffect (graphicsDevice);
+        _effectPass = _effect.CurrentTechnique.Passes[0];
+        _batcher = new SDFBatcher (graphicsDevice);
     }
 
-    struct SDFInstance : IVertexType
+    ~SDFBatch ()
     {
-        public Vector2 Position;
-        public float Rotation;
-        public Vector2 Scale;
-        public Vector4 ShapeData0;
-        public Vector4 ShapeData1;
-        public Vector4 ShapeMask0;
-        public Color Color;
-
-        public static readonly VertexDeclaration VertexDeclaration = new (
-            new VertexElement (0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 1),
-            new VertexElement (8, VertexElementFormat.Single, VertexElementUsage.TextureCoordinate, 2),
-            new VertexElement (12, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 3),
-            new VertexElement (20, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 4),
-            new VertexElement (36, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 5),
-            new VertexElement (52, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 6),
-            new VertexElement (68, VertexElementFormat.Color, VertexElementUsage.Color, 1)
-            );
-
-        readonly VertexDeclaration IVertexType.VertexDeclaration => VertexDeclaration;
+        Dispose (false);
     }
 
-    public class SDFBatch
+    public void Dispose ()
     {
-        private readonly GraphicsDevice _graphicsDevice;
-        private readonly SDFEffect _effect;
-        private readonly EffectPass _effectPass;
-        private readonly SDFBatcher _batcher;
+        Dispose (true);
+        GC.SuppressFinalize (this);
+    }
 
-        private bool _beginCalled;
-
-        public SDFBatch (GraphicsDevice graphicsDevice)
+    private void Dispose (bool disposing)
+    {
+        if (!_disposed)
         {
-            _graphicsDevice = graphicsDevice;
-            _effect = new SDFEffect (graphicsDevice);
-            _effectPass = _effect.CurrentTechnique.Passes[0];
-            _batcher = new SDFBatcher (graphicsDevice);
-        }
-
-        public void Begin (Matrix? worldViewProjectionMatrix)
-        {
-            if (_beginCalled)
+            if (disposing)
             {
-                throw new InvalidOperationException ("Begin cannot be called again until End has been successfully called.");
+                _effect?.Dispose ();
             }
 
-            _beginCalled = true;
-
-            _effect.Parameters["WorldViewProjection"].SetValue (worldViewProjectionMatrix ?? Matrix.Identity);
-            _effectPass.Apply ();
+            _disposed = true;
         }
+    }
 
-        public void End ()
+    public void Begin (Matrix? worldViewProjectionMatrix)
+    {
+        if (_beginCalled)
         {
-            if (!_beginCalled)
-            {
-                throw new InvalidOperationException ("Begin must be called before calling End.");
-            }
-
-            _beginCalled = false;
-
-            _graphicsDevice.BlendState = BlendState.AlphaBlend;
-            _graphicsDevice.DepthStencilState = DepthStencilState.None;
-            _graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            _graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
-
-            _batcher.DrawBatch ();
+            throw new InvalidOperationException ("Begin cannot be called again until End has been successfully called.");
         }
 
-        public void DrawCircle (Vector2 center, float radius, Color color, float thickness = 1f)
+        _beginCalled = true;
+
+        _effect.Parameters["WorldViewProjection"].SetValue (worldViewProjectionMatrix ?? Matrix.Identity);
+        _effectPass.Apply ();
+    }
+
+    public void End ()
+    {
+        if (!_beginCalled)
         {
-            ref SDFInstance instance = ref _batcher.CreateInstance ();
-            instance.Position = center;
-            instance.Rotation = 0f;
-            instance.Scale = new Vector2 (radius * 2f) + new Vector2 (thickness * 2f);
-            instance.ShapeData0 = new Vector4 (radius, 0f, 0f, 0f);
-            instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
-            instance.ShapeMask0 = new Vector4 (1f, 0f, 0f, 0f);
-            instance.Color = color;
+            throw new InvalidOperationException ("Begin must be called before calling End.");
         }
 
-        public void DrawLine (Vector2 start, Vector2 end, Color color, float thickness = 1f)
-        {
-            ref SDFInstance instance = ref _batcher.CreateInstance ();
-            instance.Position = (start + end) * 0.5f;
-            instance.Rotation = 0f;
-            instance.Scale = new Vector2 (MathF.Abs (end.X - start.X) + thickness * 2f, MathF.Abs (end.Y - start.Y) + thickness * 2f);
-            instance.ShapeData0 = new Vector4 (start.X - instance.Position.X, start.Y - instance.Position.Y, end.X - instance.Position.X, end.Y - instance.Position.Y);
-            instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
-            instance.ShapeMask0 = new Vector4 (0f, 1f, 0f, 0f);
-            instance.Color = color;
-        }
+        _beginCalled = false;
 
-        public void DrawParabora (Vector2 focus, Vector2 directrix, Vector2 min, Vector2 max, Color color, float thickness = 1)
-        {
-            Vector2 direction = focus - directrix;
-            Vector2 vertex = (focus + directrix) * 0.5f;
-            Vector2 center = (min + max) * 0.5f;
-            Vector2 offset = center - vertex;
+        _graphicsDevice.BlendState = BlendState.AlphaBlend;
+        _graphicsDevice.DepthStencilState = DepthStencilState.None;
+        _graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+        _graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
 
-            ref SDFInstance instance = ref _batcher.CreateInstance ();
-            instance.Position = center;
-            instance.Rotation = MathF.Atan2 (direction.Y, direction.X) - MathF.PI / 2f;
-            instance.Scale = new Vector2 (float.Abs (max.X - min.X), float.Abs (max.Y - min.Y));
-            instance.ShapeData0 = new Vector4 (1f / (4f * Vector2.Distance (focus, vertex)), offset.X, offset.Y, 0f);
-            instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
-            instance.ShapeMask0 = new Vector4 (0f, 0f, 1f, 0f);
-            instance.Color = color;
-        }
+        _batcher.DrawBatch ();
+    }
+
+    public void DrawCircle (Vector2 center, float radius, Color color, float thickness = 1f)
+    {
+        ref SDFInstance instance = ref _batcher.CreateInstance ();
+        instance.Position = center;
+        instance.Rotation = 0f;
+        instance.Scale = new Vector2 (radius * 2f) + new Vector2 (thickness * 2f);
+        instance.ShapeData0 = new Vector4 (radius, 0f, 0f, 0f);
+        instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
+        instance.ShapeMask0 = new Vector4 (1f, 0f, 0f, 0f);
+        instance.Color = color;
+    }
+
+    public void DrawLine (Vector2 start, Vector2 end, Color color, float thickness = 1f)
+    {
+        ref SDFInstance instance = ref _batcher.CreateInstance ();
+        instance.Position = (start + end) * 0.5f;
+        instance.Rotation = 0f;
+        instance.Scale = new Vector2 (MathF.Abs (end.X - start.X) + thickness * 2f, MathF.Abs (end.Y - start.Y) + thickness * 2f);
+        instance.ShapeData0 = new Vector4 (start.X - instance.Position.X, start.Y - instance.Position.Y, end.X - instance.Position.X, end.Y - instance.Position.Y);
+        instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
+        instance.ShapeMask0 = new Vector4 (0f, 1f, 0f, 0f);
+        instance.Color = color;
+    }
+
+    public void DrawParabora (Vector2 focus, Vector2 directrix, Vector2 min, Vector2 max, Color color, float thickness = 1)
+    {
+        Vector2 direction = focus - directrix;
+        Vector2 vertex = (focus + directrix) * 0.5f;
+        Vector2 center = (min + max) * 0.5f;
+        Vector2 offset = center - vertex;
+
+        ref SDFInstance instance = ref _batcher.CreateInstance ();
+        instance.Position = center;
+        instance.Rotation = MathF.Atan2 (direction.Y, direction.X) - MathF.PI / 2f;
+        instance.Scale = new Vector2 (float.Abs (max.X - min.X), float.Abs (max.Y - min.Y));
+        instance.ShapeData0 = new Vector4 (1f / (4f * Vector2.Distance (focus, vertex)), offset.X, offset.Y, 0f);
+        instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
+        instance.ShapeMask0 = new Vector4 (0f, 0f, 1f, 0f);
+        instance.Color = color;
     }
 }
