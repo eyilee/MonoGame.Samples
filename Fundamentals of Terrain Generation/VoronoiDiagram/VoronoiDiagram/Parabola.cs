@@ -19,7 +19,7 @@ public class Parabola (Vector2 focus)
 
     public static Vector2 GetVertex (Vector2 focus, float directrixY)
     {
-        return new Vector2 (focus.X, focus.Y + GetFocalLength (focus, directrixY));
+        return new Vector2 (focus.X, focus.Y - GetFocalLength (focus, directrixY));
     }
 
     public static float GetY (Vector2 focus, float directrixY, float x)

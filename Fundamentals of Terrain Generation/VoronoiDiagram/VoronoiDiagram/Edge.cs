@@ -4,15 +4,11 @@ namespace MonoGame.Samples.VoronoiDiagram;
 
 public class Edge
 {
-    private static int _edgeIDCounter = 0;
-
     private enum Direction
     {
         Left,
         Right,
     }
-
-    public readonly int EdgeID = _edgeIDCounter++;
 
     public Vector2 StartPoint;
     public Vector2 EndPoint;

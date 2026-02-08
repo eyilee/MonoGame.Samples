@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Samples.Library;
-using MonoGame.Samples.Library.Canvas;
+using MonoGame.Samples.Library.SDF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,15 +10,13 @@ namespace MonoGame.Samples.VoronoiDiagram;
 
 public class VoronoiDiagram
 {
-    private static readonly Random _random = new ();
+    private static readonly Random s_random = new ();
 
-    private readonly Canvas? _canvas;
-
-    private readonly Texture2D _texture;
-    private readonly int _cellSize = 2;
-
+    private readonly SDFBatch _sdfBatch;
     private readonly int _size;
     private readonly int _pointCount;
+    private Vector2 _min;
+    private Vector2 _max;
 
     private readonly List<Vector2> _points = [];
     private readonly List<Event> _events = [];
@@ -27,10 +25,6 @@ public class VoronoiDiagram
     private readonly List<Vector2> _vertices = [];
     private readonly List<Polygon> _polygons = [];
     private float _sweeplineY;
-    private float _minX = 0f;
-    private float _minY = 0f;
-    private float _maxX = 0f;
-    private float _maxY = 0f;
 
     public enum EStepState
     {
@@ -48,14 +42,15 @@ public class VoronoiDiagram
             throw new ArgumentException ("Size must be greater than 0", nameof (size));
         }
 
-        _canvas = new Canvas (graphicsDevice, size, size, _cellSize);
-        _canvas.SetOffset (-_canvas.PixelWidth / 2, -_canvas.PixelHeight / 2);
+        Camera.Main.LookAt (new Vector2 (size / 2f));
 
-        _texture = new Texture2D (graphicsDevice, 1, 1);
-        _texture.SetData ([Color.White]);
+        _sdfBatch = new SDFBatch (graphicsDevice);
 
         _size = size;
         _pointCount = pointCount;
+
+        _min = new Vector2 (0f, 0f);
+        _max = new Vector2 (_size, _size);
 
         Reset ();
     }
@@ -69,14 +64,10 @@ public class VoronoiDiagram
         _vertices.Clear ();
         _polygons.Clear ();
         _sweeplineY = _size - 1;
-        _minX = 0;
-        _minY = 0;
-        _maxX = _size;
-        _maxY = _size;
 
         while (_points.Count < _pointCount)
         {
-            Vector2 point = new (_random.Next (_size), _random.Next (_size));
+            Vector2 point = new (s_random.Next (_size), s_random.Next (_size));
             if (_points.Any (p => (p.X - point.X) * (p.X - point.X) + (p.Y - point.Y) * (p.Y - point.Y) <= 100))
             {
                 continue;
@@ -103,10 +94,6 @@ public class VoronoiDiagram
         _vertices.Clear ();
         _polygons.Clear ();
         _sweeplineY = _size - 1;
-        _minX = 0;
-        _minY = 0;
-        _maxX = _size;
-        _maxY = _size;
 
         foreach (Vector2 point in _points)
         {
@@ -277,21 +264,21 @@ public class VoronoiDiagram
 
             if (firstVertex != lastVertex)
             {
-                if (firstVertex.X == lastVertex.X && (firstVertex.X == _minX || firstVertex.X == _maxX))
+                if (firstVertex.X == lastVertex.X && (firstVertex.X == _min.X || firstVertex.X == _max.X))
                 {
                     orderedLines.AddLast (Tuple.Create (lastVertex, firstVertex));
                 }
-                else if (firstVertex.Y == lastVertex.Y && (firstVertex.Y == _minY || firstVertex.Y == _maxY))
+                else if (firstVertex.Y == lastVertex.Y && (firstVertex.Y == _min.Y || firstVertex.Y == _max.Y))
                 {
                     orderedLines.AddLast (Tuple.Create (lastVertex, firstVertex));
                 }
                 else
                 {
                     List<Vector2> corners = [
-                        new (_minX, _minY),
-                        new (_maxX, _minY),
-                        new (_maxX, _maxY),
-                        new (_minX, _maxY)
+                        new (_min.X, _min.Y),
+                        new (_max.X, _min.Y),
+                        new (_max.X, _max.Y),
+                        new (_min.X, _max.Y)
                     ];
 
                     for (int i = 0; i < 2; i++)
@@ -329,40 +316,6 @@ public class VoronoiDiagram
         }
 
         _state = EStepState.Finished;
-
-        for (int x = 0; x < _size; x++)
-        {
-            for (int y = 0; y < _size; y++)
-            {
-                float minDistance = float.MaxValue;
-
-                Vector2? nearestSite = null;
-                foreach (Vector2 site in _points)
-                {
-                    float distance = Vector2.DistanceSquared (new Vector2 (x + 0.5f, y + 0.5f), site);
-                    if (distance < minDistance)
-                    {
-                        minDistance = distance;
-                        nearestSite = site;
-                    }
-                }
-
-                if (nearestSite.HasValue)
-                {
-                    float hue = 360f * _points.IndexOf (nearestSite.Value) / _points.Count;
-                    _canvas?.SetPixel (x, y, ColorUtility.HSVToRGB (hue, 0.6f, 1));
-                }
-                else
-                {
-                    _canvas?.SetPixel (x, y, Color.White);
-                }
-            }
-        }
-
-        foreach (Vector2 site in _points)
-        {
-            _canvas?.SetPixel ((int)MathF.Round (site.X), (int)MathF.Round (site.Y), Color.Black);
-        }
     }
 
     private void SortEvents ()
@@ -618,298 +571,66 @@ public class VoronoiDiagram
             }
         }
 
-        if (_vertices.Count > 0)
-        {
-            _minX = MathF.Min (_vertices.Min (v => v.X), 0f);
-            _minY = MathF.Min (_vertices.Min (v => v.Y), 0f);
-            _maxX = MathF.Max (_vertices.Max (v => v.X), _size);
-            _maxY = MathF.Max (_vertices.Max (v => v.Y), _size);
-        }
+        _min.X = MathF.Min (_vertices.Min (v => v.X), 0f);
+        _min.Y = MathF.Min (_vertices.Min (v => v.Y), 0f);
+        _max.X = MathF.Max (_vertices.Max (v => v.X), _size);
+        _max.Y = MathF.Max (_vertices.Max (v => v.Y), _size);
 
         foreach (Edge edge in _edges)
         {
-            edge.Extend (_minX, _minY, _maxX, _maxY);
+            edge.Extend (_min.X, _min.Y, _max.X, _max.Y);
         }
     }
 
-    public void Draw (SpriteBatch spriteBatch)
+    public void Draw ()
     {
-        if (_state == EStepState.Fortune)
+        _sdfBatch.Begin (Camera.Main.GetViewProjectionMatrix ());
+        _sdfBatch.DrawLine (Vector2.Zero, new Vector2 (0f, _size), Color.Green);
+        _sdfBatch.DrawLine (Vector2.Zero, new Vector2 (_size, 0f), Color.Green);
+        _sdfBatch.DrawLine (new Vector2 (_size), new Vector2 (0f, _size), Color.Green);
+        _sdfBatch.DrawLine (new Vector2 (_size), new Vector2 (_size, 0f), Color.Green);
+
+        if (_state != EStepState.Finished)
         {
-            DrawBackground (spriteBatch);
-            DrawSweepLine (spriteBatch);
+            _sdfBatch.DrawLine (new Vector2 (0, _sweeplineY), new Vector2 (_size, _sweeplineY), Color.Red);
 
             foreach ((Vector2 focus, Parabola parabola) in _beachline.GroupBy (p => p.Focus).ToDictionary (g => g.Key, g => g.First ()))
             {
-                DrawParabola (spriteBatch, parabola, _sweeplineY, Color.Orange * 0.5f);
+                if (focus.Y == _sweeplineY)
+                {
+                    continue;
+                }
+
+                Vector2 vertex = Parabola.GetVertex (focus, _sweeplineY);
+                Vector2 left = parabola.LeftEdge is null ? vertex : parabola.LeftEdge.StartPoint;
+                Vector2 right = parabola.RightEdge is null ? vertex : parabola.RightEdge.StartPoint;
+                Vector2 min = Vector2.Clamp (Vector2.Min (Vector2.Min (left, right), vertex), _min, _max);
+                Vector2 max = Vector2.Clamp (Vector2.Min (Vector2.Max (left, right), vertex), _min, _max);
+                _sdfBatch.DrawParabora (focus, new Vector2 (focus.X, _sweeplineY), _min, _max, Color.Orange);
             }
 
             foreach (Edge edge in _edges)
             {
-                DrawLine (spriteBatch, edge.StartPoint, edge.EndPoint, Color.Blue * 0.5f);
+                _sdfBatch.DrawLine (edge.StartPoint, edge.EndPoint, Color.Blue);
             }
         }
 
         if (_state == EStepState.Finished)
         {
-            _canvas?.Draw (spriteBatch);
-
             foreach (Polygon polygon in _polygons)
             {
                 for (int i = 0; i < polygon.Points.Count; i++)
                 {
-                    DrawLine (spriteBatch, polygon.Points[i], polygon.Points[(i + 1) % polygon.Points.Count], Color.Blue * 0.5f);
+                    _sdfBatch.DrawLine (polygon.Points[i], polygon.Points[(i + 1) % polygon.Points.Count], Color.Blue);
                 }
             }
         }
 
         foreach (Vector2 point in _points)
         {
-            DrawPoint (spriteBatch, point.X, point.Y, Color.Black);
-        }
-    }
-
-    private void DrawBackground (SpriteBatch spriteBatch)
-    {
-        int x = (int)MathF.Floor (_minX);
-        int y = (int)MathF.Floor (_minY);
-        int width = (int)MathF.Ceiling (_maxX) - x;
-        int height = (int)MathF.Ceiling (_maxY) - y;
-        spriteBatch.Draw (_texture, ToViewRectangle (x, y, width, height), Color.White);
-    }
-
-    private void DrawSweepLine (SpriteBatch spriteBatch)
-    {
-        int x = (int)MathF.Floor (_minX);
-        int width = (int)MathF.Ceiling (_maxX) - x;
-        spriteBatch.Draw (_texture, ToViewRectangle (x, (int)_sweeplineY, width, 1), Color.Red);
-    }
-
-    private void DrawPoint (SpriteBatch spriteBatch, int x, int y, Color color)
-    {
-        if (x < _minX || x > _maxX || y < _minY || y > _maxY)
-        {
-            return;
+            _sdfBatch.DrawCircle (point, 3f, Color.Black);
         }
 
-        spriteBatch.Draw (_texture, ToViewRectangle (x, y, 1, 1), color);
-    }
-
-    private void DrawPoint (SpriteBatch spriteBatch, int x, float y, Color color)
-    {
-        int floorY = (int)MathF.Floor (y);
-        int ceilingY = (int)MathF.Ceiling (y);
-
-        if (floorY == ceilingY)
-        {
-            DrawPoint (spriteBatch, x, floorY, color);
-            return;
-        }
-
-        float rateY = y - MathF.Floor (y);
-
-        if (floorY >= _minY && floorY < _maxY)
-        {
-            DrawPoint (spriteBatch, x, floorY, color * (1f - rateY));
-        }
-
-        if (ceilingY >= _minY && ceilingY < _maxY)
-        {
-            DrawPoint (spriteBatch, x, ceilingY, color * rateY);
-        }
-    }
-
-    private void DrawPoint (SpriteBatch spriteBatch, float x, int y, Color color)
-    {
-        int floorX = (int)MathF.Floor (x);
-        int ceilingX = (int)MathF.Ceiling (x);
-
-        if (floorX == ceilingX)
-        {
-            DrawPoint (spriteBatch, floorX, y, color);
-            return;
-        }
-
-        float rateX = x - MathF.Floor (x);
-
-        if (floorX >= _minX && floorX < _maxX)
-        {
-            DrawPoint (spriteBatch, floorX, y, color * (1f - rateX));
-        }
-
-        if (ceilingX >= _minX && ceilingX < _maxX)
-        {
-            DrawPoint (spriteBatch, ceilingX, y, color * rateX);
-        }
-    }
-
-    private void DrawPoint (SpriteBatch spriteBatch, float x, float y, Color color)
-    {
-        int floorX = (int)MathF.Floor (x);
-        int ceilingX = (int)MathF.Ceiling (x);
-
-        int floorY = (int)MathF.Floor (y);
-        int ceilingY = (int)MathF.Ceiling (y);
-
-        if (floorX == ceilingX && floorY == ceilingY)
-        {
-            DrawPoint (spriteBatch, floorX, floorY, color);
-            return;
-        }
-        else if (floorX == ceilingX)
-        {
-            DrawPoint (spriteBatch, floorX, y, color);
-            return;
-        }
-        else if (floorY == ceilingY)
-        {
-            DrawPoint (spriteBatch, x, floorY, color);
-            return;
-        }
-
-        float rateX = x - MathF.Floor (x);
-        float rateY = y - MathF.Floor (y);
-
-        if (floorX >= _minX && floorX < _maxX)
-        {
-            if (floorY >= _minY && floorY < _maxY)
-            {
-                DrawPoint (spriteBatch, floorX, floorY, color * (1f - rateX) * (1f - rateY));
-            }
-
-            if (ceilingY >= _minY && ceilingY < _maxY)
-            {
-                DrawPoint (spriteBatch, floorX, ceilingY, color * (1f - rateX) * rateY);
-            }
-        }
-
-        if (ceilingX >= _minX && ceilingX < _maxX)
-        {
-            if (floorY >= _minY && floorY < _maxY)
-            {
-                DrawPoint (spriteBatch, ceilingX, floorY, color * rateX * (1f - rateY));
-            }
-
-            if (ceilingY >= _minY && ceilingY < _maxY)
-            {
-                DrawPoint (spriteBatch, ceilingX, ceilingY, color * rateX * rateY);
-            }
-        }
-    }
-
-    private void DrawLine (SpriteBatch spriteBatch, Vector2 startPoint, Vector2 endPoint, Color color)
-    {
-        float startX = startPoint.X;
-        float startY = startPoint.Y;
-        float endX = endPoint.X;
-        float endY = endPoint.Y;
-
-        float deltaX = MathF.Abs (endPoint.X - startPoint.X);
-        float deltaY = MathF.Abs (endPoint.Y - startPoint.Y);
-
-        if (deltaX > deltaY)
-        {
-            if (startX > endX)
-            {
-                (startX, endX) = (endX, startX);
-                (startY, endY) = (endY, startY);
-            }
-
-            float fromX = MathF.Max (startX, _minX);
-            float toX = MathF.Min (endX, _maxX);
-
-            float lerp = (endY - startY) / (endX - startX);
-
-            if (fromX < MathF.Ceiling (fromX))
-            {
-                float y = startY + (fromX - startX) * lerp;
-                DrawPoint (spriteBatch, fromX, y, color);
-            }
-
-            for (int x = (int)MathF.Floor (fromX); x <= MathF.Ceiling (toX); x++)
-            {
-                float y = startY + (x - startX) * lerp;
-                DrawPoint (spriteBatch, x, y, color);
-            }
-
-            if (toX > MathF.Floor (toX))
-            {
-                float y = startY + (toX - startX) * lerp;
-                DrawPoint (spriteBatch, toX, y, color);
-            }
-        }
-        else
-        {
-            if (startY > endY)
-            {
-                (startX, endX) = (endX, startX);
-                (startY, endY) = (endY, startY);
-            }
-
-            float fromY = MathF.Max (startY, _minY);
-            float toY = MathF.Min (endY, _maxY);
-
-            if (startX == endX)
-            {
-                if (fromY < MathF.Ceiling (fromY))
-                {
-                    DrawPoint (spriteBatch, startX, fromY, color);
-                }
-
-                for (int y = (int)MathF.Floor (fromY); y <= MathF.Ceiling (toY); y++)
-                {
-                    DrawPoint (spriteBatch, startX, y, color);
-                }
-
-                if (toY > MathF.Floor (toY))
-                {
-                    DrawPoint (spriteBatch, startX, toY, color);
-                }
-            }
-            else
-            {
-                float lerp = (endY - startY) / (endX - startX);
-
-                if (fromY < MathF.Ceiling (fromY))
-                {
-                    float x = startX + (fromY - startY) / lerp;
-                    DrawPoint (spriteBatch, x, fromY, color);
-                }
-
-                for (int y = (int)MathF.Ceiling (fromY); y <= MathF.Floor (toY); y++)
-                {
-                    float x = startX + (y - startY) / lerp;
-                    DrawPoint (spriteBatch, x, y, color);
-                }
-
-                if (toY > MathF.Floor (toY))
-                {
-                    float x = startX + (toY - startY) / lerp;
-                    DrawPoint (spriteBatch, x, toY, color);
-                }
-            }
-        }
-    }
-
-    private void DrawParabola (SpriteBatch spriteBatch, Parabola parabola, float directrixY, Color color)
-    {
-        for (int x = (int)MathF.Floor (_minX); x <= MathF.Ceiling (_maxX); x++)
-        {
-            float y = Parabola.GetY (parabola.Focus, directrixY, x);
-            if (y > directrixY && y < _maxY)
-            {
-                DrawPoint (spriteBatch, x, y, color);
-            }
-        }
-    }
-
-    private Rectangle ToViewRectangle (int x, int y, int width, int height)
-    {
-        int offset = _size * _cellSize / 2;
-        int viewWidth = width * _cellSize;
-        int viewHeight = height * _cellSize;
-        int viewX = (x * _cellSize) - offset;
-        int viewY = offset - (y * _cellSize) - viewHeight;
-        return new Rectangle (viewX, viewY, viewWidth, viewHeight);
+        _sdfBatch.End ();
     }
 }
