@@ -17,6 +17,12 @@ public class Core : Game
 
     private static Scene? s_nextScene;
 
+    public static Scene? ActiveScene => s_activeScene;
+
+    private static Camera s_defaultCamera = null!;
+
+    public static Camera MainCamera { get; private set; } = null!;
+
     public static GraphicsDeviceManager Graphics { get; private set; } = null!;
 
     public static new ContentManager Content { get; private set; } = null!;
@@ -70,6 +76,15 @@ public class Core : Game
         base.Initialize ();
     }
 
+    protected override void LoadContent ()
+    {
+        s_defaultCamera = new Camera (GraphicsDevice);
+
+        SetCamera (s_defaultCamera);
+
+        base.LoadContent ();
+    }
+
     protected override void Update (GameTime gameTime)
     {
         Input.Update (gameTime);
@@ -115,5 +130,10 @@ public class Core : Game
         s_nextScene = null;
 
         s_activeScene?.Initialize ();
+    }
+
+    public static void SetCamera (Camera? camera)
+    {
+        MainCamera = camera ?? s_defaultCamera;
     }
 }

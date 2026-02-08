@@ -6,6 +6,12 @@ namespace MonoGame.Samples.Library;
 
 public class Camera
 {
+    public static Camera Main
+    {
+        get => Core.MainCamera;
+        set => Core.SetCamera (value);
+    }
+
     private readonly GraphicsDevice _graphicsDevice;
 
     public int Width => _graphicsDevice.Viewport.Width;
@@ -33,7 +39,7 @@ public class Camera
     public float Rotation { get; set; }
 
     private float _zoom = 1f;
-    private float _minZoom;
+    private float _minZoom = 1f;
     private float _maxZoom = float.MaxValue;
 
     public float Zoom

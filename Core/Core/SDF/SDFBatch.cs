@@ -114,12 +114,12 @@ namespace MonoGame.Samples.Library.SDF
             Vector2 direction = focus - directrix;
             Vector2 vertex = (focus + directrix) * 0.5f;
             Vector2 center = (min + max) * 0.5f;
-            Vector2 offset = vertex - center;
+            Vector2 offset = center - vertex;
 
             ref SDFInstance instance = ref _batcher.CreateInstance ();
             instance.Position = center;
             instance.Rotation = MathF.Atan2 (direction.Y, direction.X) - MathF.PI / 2f;
-            instance.Scale = (max - min);
+            instance.Scale = new Vector2 (float.Abs (max.X - min.X), float.Abs (max.Y - min.Y));
             instance.ShapeData0 = new Vector4 (1f / (4f * Vector2.Distance (focus, vertex)), offset.X, offset.Y, 0f);
             instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
             instance.ShapeMask0 = new Vector4 (0f, 0f, 1f, 0f);

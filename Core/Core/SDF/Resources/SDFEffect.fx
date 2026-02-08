@@ -81,7 +81,7 @@ float sdfParabola (float2 pos, float k, float2 o)
 {
     pos += o;
     pos.x = abs (pos.x);
-    
+
     // the derivative of the distance function between point and parabola:
     // (u, v) = (pos.x, pos.y)
     // 2k^2x^3 + (1 - 2kv)x - u = 0
@@ -91,9 +91,9 @@ float sdfParabola (float2 pos, float k, float2 o)
     float ik = 1.0 / k;
     float p = ik * (2.0 * pos.y - ik) / 6.0;
     float q = pos.x * 0.25 * ik * ik;
-    
+
     float x;
-    
+
     // have peak at u = -sqrt(p) and valley at x = sqrt(p)
     // put x = sqrt(p) where sqrt(p) > 0 into x^3 - 3px - 2q = 0
     // get p * sqrt(p) - 3p * sqrt(p) - 2q = 0
@@ -113,7 +113,7 @@ float sdfParabola (float2 pos, float k, float2 o)
         float r = sqrt (p);
         x = 2.0 * r * cos (acos (q / (p * r)) / 3.0);
     }
-    
+
     return length (pos - float2 (x, k * x * x));
 }
 
