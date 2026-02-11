@@ -1,9 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 
 namespace MonoGame.Samples.Library;
 
-public class ColorUtility
+public static class ColorUtility
 {
     public static Color HSVToRGB (float h, float s, float v)
     {
@@ -16,7 +15,7 @@ public class ColorUtility
             return Color.Black;
         }
 
-        int i = (int)MathF.Floor (h / 60f);
+        int i = (int)float.Floor (h / 60f);
 
         float f = (h / 60f) - i;
         float p = v * (1f - s);

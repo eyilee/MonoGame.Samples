@@ -94,7 +94,7 @@ public class SDFBatch : IDisposable
         ref SDFInstance instance = ref _batcher.CreateInstance ();
         instance.Position = (start + end) * 0.5f;
         instance.Rotation = 0f;
-        instance.Scale = new Vector2 (MathF.Abs (end.X - start.X) + thickness * 2f, MathF.Abs (end.Y - start.Y) + thickness * 2f);
+        instance.Scale = new Vector2 (float.Abs (end.X - start.X) + thickness * 2f, float.Abs (end.Y - start.Y) + thickness * 2f);
         instance.ShapeData0 = new Vector4 (start.X - instance.Position.X, start.Y - instance.Position.Y, end.X - instance.Position.X, end.Y - instance.Position.Y);
         instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
         instance.ShapeMask0 = new Vector4 (0f, 1f, 0f, 0f);
@@ -110,7 +110,7 @@ public class SDFBatch : IDisposable
 
         ref SDFInstance instance = ref _batcher.CreateInstance ();
         instance.Position = center;
-        instance.Rotation = MathF.Atan2 (direction.Y, direction.X) - MathF.PI / 2f;
+        instance.Rotation = float.Atan2 (direction.Y, direction.X) - float.Pi / 2f;
         instance.Scale = new Vector2 (float.Abs (max.X - min.X), float.Abs (max.Y - min.Y));
         instance.ShapeData0 = new Vector4 (1f / (4f * Vector2.Distance (focus, vertex)), offset.X, offset.Y, 0f);
         instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
