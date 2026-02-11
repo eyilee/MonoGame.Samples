@@ -9,13 +9,13 @@ public class GameScene : Scene
 {
     private VoronoiDiagram? _voronoiDiagram;
 
-    private readonly float _stepTime = 0.6f;
+    private readonly float _stepTime = 1f / 60f;
     private float _nextStepTime = 0;
     private bool _isPaused = false;
 
     public override void LoadContent ()
     {
-        _voronoiDiagram = new VoronoiDiagram (GraphicsDevice, size: 512, pointCount: 10);
+        _voronoiDiagram = new VoronoiDiagram (GraphicsDevice, size: 512, pointCount: 15);
 
         Input.Keyboard.SubscribePressed (Keys.N, Next);
         Input.Keyboard.SubscribePressed (Keys.P, Pause);

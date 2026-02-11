@@ -122,6 +122,14 @@ public class VoronoiDiagram
         if (_events.Count > 0)
         {
             Event e = _events[0];
+
+            if (_sweeplineY > e.Site.Y)
+            {
+                _sweeplineY--;
+                UpdateDirectrix (_sweeplineY);
+                return;
+            }
+
             _sweeplineY = e.Site.Y;
             UpdateDirectrix (_sweeplineY);
 
@@ -167,155 +175,109 @@ public class VoronoiDiagram
             edges2.Add (edge);
         }
 
+        List<Vector2> corners = [
+            new (_min.X, _min.Y),
+            new (_max.X, _min.Y),
+            new (_max.X, _max.Y),
+            new (_min.X, _max.Y)
+            ];
+
         foreach ((Vector2 site, List<Edge> edges) in siteEdges)
         {
-            List<Tuple<Vector2, Vector2>> lines = [];
+            List<Vector2[]> lines = [];
 
-            Dictionary<Vector2, Edge> twinEdges = [];
-            foreach (Edge edge in edges)
+            foreach (IGrouping<Vector2, Edge> grouping in edges.GroupBy (e => e.StartPoint))
             {
-                Vector2 twinSite = edge.LeftSite == site ? edge.RightSite : edge.LeftSite;
-                if (!twinEdges.TryGetValue (twinSite, out Edge? twinEdge))
+                List<Edge> twinEdges = [.. grouping];
+
+                if (twinEdges.Count == 1)
                 {
-                    twinEdges[twinSite] = edge;
+                    lines.Add ([twinEdges[0].StartPoint, twinEdges[0].EndPoint]);
                 }
-                else
+                else if (twinEdges.Count == 2)
                 {
-                    Vector2 v1 = (edge.EndPoint - site);
-                    Vector2 v2 = (twinEdge.EndPoint - site);
-
-                    float cross = v1.X * v2.Y - v1.Y * v2.X;
-                    if (cross > 0)
-                    {
-                        lines.Add (Tuple.Create (edge.EndPoint, twinEdge.EndPoint));
-                    }
-                    else
-                    {
-                        lines.Add (Tuple.Create (twinEdge.EndPoint, edge.EndPoint));
-                    }
-
-                    twinEdges.Remove (twinSite);
+                    lines.Add ([twinEdges[0].EndPoint, twinEdges[1].EndPoint]);
                 }
             }
 
-            foreach ((_, Edge edge) in twinEdges)
+            lines.ForEach (line =>
             {
-                Vector2 v1 = (edge.StartPoint - site);
-                Vector2 v2 = (edge.EndPoint - site);
-
-                float cross = v1.X * v2.Y - v1.Y * v2.X;
-                if (cross > 0)
+                float cross = (line[0] - site).Cross (line[1] - line[0]);
+                if (cross < 0)
                 {
-                    lines.Add (Tuple.Create (edge.StartPoint, edge.EndPoint));
+                    (line[0], line[1]) = (line[1], line[0]);
                 }
-                else
-                {
-                    lines.Add (Tuple.Create (edge.EndPoint, edge.StartPoint));
-                }
-            }
+            });
 
-            LinkedList<Tuple<Vector2, Vector2>> orderedLines = [];
+            lines.Sort ((lhs, rhs) => (float.Atan2 (lhs[0].Y - site.Y, lhs[0].X - site.X)).CompareTo (float.Atan2 (rhs[0].Y - site.Y, rhs[0].X - site.X)));
 
-            orderedLines.AddFirst (lines[^1]);
-            lines.RemoveAt (lines.Count - 1);
-
-            do
+            for (int i = 0; i < lines.Count; i++)
             {
-                if (orderedLines.Last is null)
+                Vector2 current = lines[i][1];
+                Vector2 next = lines[(i + 1) % lines.Count][0];
+                if (current == next)
                 {
-                    throw new InvalidOperationException ("Ordered lines is empty");
+                    continue;
                 }
 
-                int index = lines.FindIndex (p => p.Item1 == orderedLines.Last.Value.Item2);
-                if (index >= 0)
+                int currentCornerIndex = FindCornerIndex (current);
+                int nextCornerIndex = FindCornerIndex (next);
+                if (currentCornerIndex == -1 || nextCornerIndex == -1)
                 {
-                    orderedLines.AddLast (lines[index]);
-                    lines.RemoveAt (index);
-                }
-                else
-                {
-                    break;
-                }
-            }
-            while (true);
-
-            do
-            {
-                if (orderedLines.First is null)
-                {
-                    throw new InvalidOperationException ("Ordered lines is empty");
+                    continue;
                 }
 
-                int index = lines.FindIndex (p => p.Item2 == orderedLines.First.Value.Item1);
-                if (index >= 0)
-                {
-                    orderedLines.AddFirst (lines[index]);
-                    lines.RemoveAt (index);
-                }
-                else
-                {
-                    break;
-                }
-            }
-            while (true);
+                List<Vector2[]> insertions = [];
 
-            Vector2 firstVertex = orderedLines.First.Value.Item1;
-            Vector2 lastVertex = orderedLines.Last.Value.Item2;
-
-            if (firstVertex != lastVertex)
-            {
-                if (firstVertex.X == lastVertex.X && (firstVertex.X == _min.X || firstVertex.X == _max.X))
+                while (currentCornerIndex != nextCornerIndex)
                 {
-                    orderedLines.AddLast (Tuple.Create (lastVertex, firstVertex));
+                    insertions.Add ([current, corners[currentCornerIndex]]);
+                    current = corners[currentCornerIndex];
+                    currentCornerIndex = (currentCornerIndex + 1) % corners.Count;
                 }
-                else if (firstVertex.Y == lastVertex.Y && (firstVertex.Y == _min.Y || firstVertex.Y == _max.Y))
-                {
-                    orderedLines.AddLast (Tuple.Create (lastVertex, firstVertex));
-                }
-                else
-                {
-                    List<Vector2> corners = [
-                        new (_min.X, _min.Y),
-                        new (_max.X, _min.Y),
-                        new (_max.X, _max.Y),
-                        new (_min.X, _max.Y)
-                    ];
 
-                    for (int i = 0; i < 2; i++)
-                    {
-                        for (int j = 0; j < corners.Count; j++)
-                        {
-                            if (lastVertex.X == corners[j].X || lastVertex.Y == corners[j].Y)
-                            {
-                                Vector2 v1 = (site - corners[j]);
-                                Vector2 v2 = (lastVertex - corners[j]);
+                insertions.Add ([current, next]);
+                lines.InsertRange (i + 1, insertions);
 
-                                float cross = v1.X * v2.Y - v1.Y * v2.X;
-                                if (cross > 0)
-                                {
-                                    orderedLines.AddLast (Tuple.Create (lastVertex, corners[j]));
-                                    lastVertex = corners[j];
-                                    corners.RemoveAt (j);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    orderedLines.AddLast (Tuple.Create (lastVertex, firstVertex));
-                }
+                break;
             }
 
             List<Vector2> vertices = [];
-            foreach ((Vector2 startPoint, Vector2 endPoint) in orderedLines)
+            for (int i = 0; i < lines.Count; i++)
             {
-                vertices.Add (startPoint);
+                vertices.Add (lines[i][0]);
             }
 
             _polygons.Add (new Polygon (site, vertices));
         }
 
         _state = EStepState.Finished;
+    }
+
+    private int FindCornerIndex (Vector2 vertex)
+    {
+        const float epsilon = 1e-3f;
+
+        if (float.Abs (vertex.X - _min.X) < epsilon)
+        {
+            return 0;
+        }
+        else if (float.Abs (vertex.Y - _min.Y) < epsilon)
+        {
+            return 1;
+        }
+        else if (float.Abs (vertex.X - _max.X) < epsilon)
+        {
+            return 2;
+        }
+        else if (float.Abs (vertex.Y - _max.Y) < epsilon)
+        {
+            return 3;
+        }
+        else
+        {
+            return -1;
+        }
     }
 
     private void SortEvents ()
@@ -571,10 +533,10 @@ public class VoronoiDiagram
             }
         }
 
-        _min.X = MathF.Min (_vertices.Min (v => v.X), 0f);
-        _min.Y = MathF.Min (_vertices.Min (v => v.Y), 0f);
-        _max.X = MathF.Max (_vertices.Max (v => v.X), _size);
-        _max.Y = MathF.Max (_vertices.Max (v => v.Y), _size);
+        _min.X = float.Min (_vertices.Min (v => v.X), 0f);
+        _min.Y = float.Min (_vertices.Min (v => v.Y), 0f);
+        _max.X = float.Max (_vertices.Max (v => v.X), _size);
+        _max.Y = float.Max (_vertices.Max (v => v.Y), _size);
 
         foreach (Edge edge in _edges)
         {

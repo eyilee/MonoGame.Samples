@@ -66,7 +66,7 @@ public class Parabola (Vector2 focus)
             return [];
         }
 
-        float sqrtDiscriminant = MathF.Sqrt (discriminant);
+        float sqrtDiscriminant = float.Sqrt (discriminant);
         float x1 = (-b + sqrtDiscriminant) / (2f * a);
         float x2 = (-b - sqrtDiscriminant) / (2f * a);
         return [new (x1, GetY (focus1, directrixY, x1)), new (x2, GetY (focus1, directrixY, x2))];
