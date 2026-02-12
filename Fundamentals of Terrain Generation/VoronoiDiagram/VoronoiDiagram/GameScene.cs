@@ -15,7 +15,7 @@ public class GameScene : Scene
 
     public override void LoadContent ()
     {
-        _voronoiDiagram = new VoronoiDiagram (GraphicsDevice, size: 512, pointCount: 15);
+        _voronoiDiagram = new VoronoiDiagram (GraphicsDevice, size: 512, pointCount: 10);
 
         Input.Keyboard.SubscribePressed (Keys.N, Next);
         Input.Keyboard.SubscribePressed (Keys.P, Pause);

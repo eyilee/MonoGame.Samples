@@ -15,8 +15,6 @@ public class VoronoiDiagram
     private readonly SDFBatch _sdfBatch;
     private readonly int _size;
     private readonly int _pointCount;
-    private Vector2 _min;
-    private Vector2 _max;
 
     private readonly List<Vector2> _points = [];
     private readonly List<Event> _events = [];
@@ -24,7 +22,11 @@ public class VoronoiDiagram
     private readonly List<Edge> _edges = [];
     private readonly List<Vector2> _vertices = [];
     private readonly List<Polygon> _polygons = [];
+    private int _sweepFrame;
+    private float _baseSweeplineY;
     private float _sweeplineY;
+    private Vector2 _min;
+    private Vector2 _max;
 
     public enum EStepState
     {
@@ -45,12 +47,8 @@ public class VoronoiDiagram
         Camera.Main.LookAt (new Vector2 (size / 2f));
 
         _sdfBatch = new SDFBatch (graphicsDevice);
-
         _size = size;
         _pointCount = pointCount;
-
-        _min = new Vector2 (0f, 0f);
-        _max = new Vector2 (_size, _size);
 
         Reset ();
     }
@@ -63,12 +61,16 @@ public class VoronoiDiagram
         _edges.Clear ();
         _vertices.Clear ();
         _polygons.Clear ();
-        _sweeplineY = _size - 1;
+        _sweepFrame = 0;
+        _baseSweeplineY = _size;
+        _sweeplineY = _size;
+        _min = new Vector2 (0f, 0f);
+        _max = new Vector2 (_size, _size);
 
         while (_points.Count < _pointCount)
         {
             Vector2 point = new (s_random.Next (_size), s_random.Next (_size));
-            if (_points.Any (p => (p.X - point.X) * (p.X - point.X) + (p.Y - point.Y) * (p.Y - point.Y) <= 100))
+            if (_points.Any (p => Vector2.DistanceSquared (p, point) <= 1024))
             {
                 continue;
             }
@@ -93,7 +95,11 @@ public class VoronoiDiagram
         _edges.Clear ();
         _vertices.Clear ();
         _polygons.Clear ();
-        _sweeplineY = _size - 1;
+        _sweepFrame = 0;
+        _baseSweeplineY = _size;
+        _sweeplineY = _size;
+        _min = new Vector2 (0f, 0f);
+        _max = new Vector2 (_size, _size);
 
         foreach (Vector2 point in _points)
         {
@@ -123,13 +129,16 @@ public class VoronoiDiagram
         {
             Event e = _events[0];
 
-            if (_sweeplineY > e.Site.Y)
+            if (float.Abs (_sweeplineY - e.Site.Y) >= 1f)
             {
-                _sweeplineY--;
+                _sweepFrame++;
+                _sweeplineY = float.Min (float.Lerp (_baseSweeplineY, e.Site.Y, _sweepFrame / 60f), _baseSweeplineY - _sweepFrame);
                 UpdateDirectrix (_sweeplineY);
                 return;
             }
 
+            _sweepFrame = 0;
+            _baseSweeplineY = e.Site.Y;
             _sweeplineY = e.Site.Y;
             UpdateDirectrix (_sweeplineY);
 
@@ -250,6 +259,8 @@ public class VoronoiDiagram
 
             _polygons.Add (new Polygon (site, vertices));
         }
+
+        ClipPolygons ();
 
         _state = EStepState.Finished;
     }
@@ -542,6 +553,61 @@ public class VoronoiDiagram
         {
             edge.Extend (_min.X, _min.Y, _max.X, _max.Y);
         }
+    }
+
+    private void ClipPolygons ()
+    {
+        foreach (Polygon polygon in _polygons)
+        {
+            ClipAgainst (polygon, p => p.X >= 0, (s, e) => IntersectX (s, e, 0));
+            ClipAgainst (polygon, p => p.X <= _size, (s, e) => IntersectX (s, e, _size));
+            ClipAgainst (polygon, p => p.Y >= 0, (s, e) => IntersectY (s, e, 0));
+            ClipAgainst (polygon, p => p.Y <= _size, (s, e) => IntersectY (s, e, _size));
+        }
+    }
+
+    private static void ClipAgainst (Polygon polygon, Func<Vector2, bool> isInside, Func<Vector2, Vector2, Vector2> intersect)
+    {
+        List<Vector2> clippedPoints = [];
+
+        for (int i = 0; i < polygon.Points.Count; i++)
+        {
+            Vector2 current = polygon.Points[i];
+            Vector2 next = polygon.Points[(i + 1) % polygon.Points.Count];
+
+            bool currentInside = isInside (current);
+            bool nextInside = isInside (next);
+
+            if (currentInside && nextInside)
+            {
+                clippedPoints.Add (next);
+            }
+            else if (currentInside && !nextInside)
+            {
+                clippedPoints.Add (intersect (current, next));
+            }
+            else if (!currentInside && nextInside)
+            {
+                clippedPoints.Add (intersect (current, next));
+                clippedPoints.Add (next);
+            }
+        }
+
+        polygon.Points = clippedPoints;
+    }
+
+    private static Vector2 IntersectX (Vector2 startPoint, Vector2 endPoint, float x)
+    {
+        Vector2 direction = endPoint - startPoint;
+        float t = (x - startPoint.X) / direction.X;
+        return startPoint + direction * t;
+    }
+
+    private static Vector2 IntersectY (Vector2 startPoint, Vector2 endPoint, float y)
+    {
+        Vector2 direction = endPoint - startPoint;
+        float t = (y - startPoint.Y) / direction.Y;
+        return startPoint + direction * t;
     }
 
     public void Draw ()
