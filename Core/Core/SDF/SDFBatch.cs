@@ -8,6 +8,10 @@ public class SDFBatch : IDisposable
 {
     private bool _disposed;
 
+    private static readonly Vector4 s_circleShapeMask = new (1f, 0f, 0f, 0f);
+    private static readonly Vector4 s_lineShapeMask = new (0f, 1f, 0f, 0f);
+    private static readonly Vector4 s_parabolaShapeMask = new (0f, 0f, 1f, 0f);
+
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SDFEffect _effect;
     private readonly EffectPass _effectPass;
@@ -85,7 +89,7 @@ public class SDFBatch : IDisposable
         instance.Scale = new Vector2 (radius * 2f) + new Vector2 (thickness * 2f);
         instance.ShapeData0 = new Vector4 (radius, 0f, 0f, 0f);
         instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
-        instance.ShapeMask0 = new Vector4 (1f, 0f, 0f, 0f);
+        instance.ShapeMask0 = s_circleShapeMask;
         instance.Color = color;
     }
 
@@ -97,14 +101,13 @@ public class SDFBatch : IDisposable
         instance.Scale = new Vector2 (float.Abs (end.X - start.X) + thickness * 2f, float.Abs (end.Y - start.Y) + thickness * 2f);
         instance.ShapeData0 = new Vector4 (start.X - instance.Position.X, start.Y - instance.Position.Y, end.X - instance.Position.X, end.Y - instance.Position.Y);
         instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
-        instance.ShapeMask0 = new Vector4 (0f, 1f, 0f, 0f);
+        instance.ShapeMask0 = s_lineShapeMask;
         instance.Color = color;
     }
 
-    public void DrawParabora (Vector2 focus, Vector2 directrix, Vector2 min, Vector2 max, Color color, float thickness = 1)
+    public void DrawParabora (Vector2 focus, Vector2 vertex, Vector2 min, Vector2 max, Color color, float thickness = 1)
     {
-        Vector2 direction = focus - directrix;
-        Vector2 vertex = (focus + directrix) * 0.5f;
+        Vector2 direction = focus - vertex;
         Vector2 center = (min + max) * 0.5f;
         Vector2 offset = center - vertex;
 
@@ -114,7 +117,7 @@ public class SDFBatch : IDisposable
         instance.Scale = new Vector2 (float.Abs (max.X - min.X), float.Abs (max.Y - min.Y));
         instance.ShapeData0 = new Vector4 (1f / (4f * Vector2.Distance (focus, vertex)), offset.X, offset.Y, 0f);
         instance.ShapeData1 = new Vector4 (thickness, 0f, 0f, 0f);
-        instance.ShapeMask0 = new Vector4 (0f, 0f, 1f, 0f);
+        instance.ShapeMask0 = s_parabolaShapeMask;
         instance.Color = color;
     }
 }

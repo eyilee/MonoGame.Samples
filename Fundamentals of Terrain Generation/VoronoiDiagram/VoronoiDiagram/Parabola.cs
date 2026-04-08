@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 
 namespace MonoGame.Samples.VoronoiDiagram;
 

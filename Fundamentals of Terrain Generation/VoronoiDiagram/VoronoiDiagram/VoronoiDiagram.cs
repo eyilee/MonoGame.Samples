@@ -634,7 +634,7 @@ public class VoronoiDiagram
                 Vector2 right = parabola.RightEdge is null ? vertex : parabola.RightEdge.StartPoint;
                 Vector2 min = Vector2.Clamp (Vector2.Min (Vector2.Min (left, right), vertex), _min, _max);
                 Vector2 max = Vector2.Clamp (Vector2.Min (Vector2.Max (left, right), vertex), _min, _max);
-                _sdfBatch.DrawParabora (focus, new Vector2 (focus.X, _sweeplineY), _min, _max, Color.Orange);
+                _sdfBatch.DrawParabora (focus, vertex, _min, _max, Color.Orange);
             }
 
             foreach (Edge edge in _edges)
