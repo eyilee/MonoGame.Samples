@@ -2,37 +2,74 @@
 
 namespace MonoGame.Samples.PerlinNoise;
 
-public static class PerlinNoise
+public class PerlinNoise
 {
-    private static readonly int[] permutation = [151, 160, 137, 91, 90, 15, 131,
-        13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99,
-        37, 240, 21, 10, 23, 190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94,
-        252, 219, 203, 117, 35, 11, 32, 57, 177, 33, 88, 237, 149, 56, 87, 174,
-        20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166, 77,
-        146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41,
-        55, 46, 245, 40, 244, 102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73,
-        209, 76, 132, 187, 208, 89, 18, 169, 200, 196, 135, 130, 116, 188, 159,
-        86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123, 5,
-        202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58,
-        17, 182, 189, 28, 42, 223, 183, 170, 213, 119, 248, 152, 2, 44, 154,
-        163, 70, 221, 153, 101, 155, 167, 43, 172, 9, 129, 22, 39, 253, 19, 98,
-        108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228, 251,
-        34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235,
-        249, 14, 239, 107, 49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204,
-        176, 115, 121, 50, 45, 127, 4, 150, 254, 138, 236, 205, 93, 222, 114,
-        67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180];
+    private readonly int[] _permutation;
+    private readonly float _warpOffsetX1;
+    private readonly float _warpOffsetX2;
+    private readonly float _warpOffsetY1;
+    private readonly float _warpOffsetY2;
 
-    private static readonly int[] p = [.. permutation, .. permutation];
+    public PerlinNoise ()
+    {
+        int[] permutation = [151, 160, 137, 91, 90, 15, 131,
+            13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99,
+            37, 240, 21, 10, 23, 190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94,
+            252, 219, 203, 117, 35, 11, 32, 57, 177, 33, 88, 237, 149, 56, 87, 174,
+            20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166, 77,
+            146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41,
+            55, 46, 245, 40, 244, 102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73,
+            209, 76, 132, 187, 208, 89, 18, 169, 200, 196, 135, 130, 116, 188, 159,
+            86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123, 5,
+            202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58,
+            17, 182, 189, 28, 42, 223, 183, 170, 213, 119, 248, 152, 2, 44, 154,
+            163, 70, 221, 153, 101, 155, 167, 43, 172, 9, 129, 22, 39, 253, 19, 98,
+            108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228, 251,
+            34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235,
+            249, 14, 239, 107, 49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204,
+            176, 115, 121, 50, 45, 127, 4, 150, 254, 138, 236, 205, 93, 222, 114,
+            67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180];
 
-    public static float Noise (float x, float y)
+        _permutation = [.. permutation, .. permutation];
+        _warpOffsetX1 = 0;
+        _warpOffsetX2 = 64;
+        _warpOffsetY1 = 128;
+        _warpOffsetY2 = 192;
+    }
+
+    public PerlinNoise (int seed)
+    {
+        Random random = new (seed);
+
+        int[] permutation = new int[256];
+
+        for (int i = 0; i < permutation.Length; i++)
+        {
+            permutation[i] = i;
+        }
+
+        for (int i = permutation.Length - 1; i > 0; i--)
+        {
+            int swapIndex = random.Next (i + 1);
+            (permutation[i], permutation[swapIndex]) = (permutation[swapIndex], permutation[i]);
+        }
+
+        _permutation = [.. permutation, .. permutation];
+        _warpOffsetX1 = random.NextSingle () * 256;
+        _warpOffsetX2 = random.NextSingle () * 256;
+        _warpOffsetY1 = random.NextSingle () * 256;
+        _warpOffsetY2 = random.NextSingle () * 256;
+    }
+
+    public float Noise (float x, float y)
     {
         int indexX = (int)MathF.Floor (x) & 255;
         int indexY = (int)MathF.Floor (y) & 255;
 
-        int aa = p[p[indexX] + indexY];
-        int ab = p[p[indexX] + indexY + 1];
-        int ba = p[p[indexX + 1] + indexY];
-        int bb = p[p[indexX + 1] + indexY + 1];
+        int aa = _permutation[_permutation[indexX] + indexY];
+        int ab = _permutation[_permutation[indexX] + indexY + 1];
+        int ba = _permutation[_permutation[indexX + 1] + indexY];
+        int bb = _permutation[_permutation[indexX + 1] + indexY + 1];
 
         float relativeX = x - MathF.Floor (x);
         float relativeY = y - MathF.Floor (y);
@@ -40,24 +77,27 @@ public static class PerlinNoise
         float smoothX = SmoothStep (relativeX);
         float smoothY = SmoothStep (relativeY);
 
-        return (float.Lerp (
-            float.Lerp (Gradient (aa, relativeX, relativeY), Gradient (ba, relativeX - 1, relativeY), smoothX),
+        return (float.Lerp (float.Lerp (Gradient (aa, relativeX, relativeY), Gradient (ba, relativeX - 1, relativeY), smoothX),
             float.Lerp (Gradient (ab, relativeX, relativeY - 1), Gradient (bb, relativeX - 1, relativeY - 1), smoothX),
             smoothY) + 1) / 2f;
     }
 
     public static float SmoothStep (float t) => t * t * t * (t * (t * 6 - 15) + 10);
 
-    public static float Gradient (int hash, float x, float y) => (hash & 3) switch
+    public static float Gradient (int hash, float x, float y) => (hash & 7) switch
     {
         0 => x + y,
         1 => -x + y,
         2 => x - y,
         3 => -x - y,
+        4 => x,
+        5 => -x,
+        6 => y,
+        7 => -y,
         _ => 0,
     };
 
-    public static float FractalBrownianMotionNoise (float x, float y, int octaves)
+    public float FractalBrownianMotionNoise (float x, float y, int octaves)
     {
         if (octaves <= 0)
         {
@@ -80,5 +120,13 @@ public static class PerlinNoise
         }
 
         return value / maxValue;
+    }
+
+    public float DomainWarpedNoise (float x, float y, int octaves, float warpFrequency, float warpAmplitude)
+    {
+        float warpX = x + FractalBrownianMotionNoise (x * warpFrequency + _warpOffsetX1, y * warpFrequency + _warpOffsetY1, 4) * warpAmplitude;
+        float warpY = y + FractalBrownianMotionNoise (x * warpFrequency + _warpOffsetX2, y * warpFrequency + _warpOffsetY2, 4) * warpAmplitude;
+
+        return FractalBrownianMotionNoise (warpX, warpY, octaves);
     }
 }

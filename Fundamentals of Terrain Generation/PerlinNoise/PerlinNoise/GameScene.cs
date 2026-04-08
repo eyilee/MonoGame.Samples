@@ -13,6 +13,7 @@ public class GameScene : Scene
 
     private Canvas? _canvas;
 
+    private PerlinNoise? _perlinNoise;
     private float _frequency = 0.05f;
     private readonly float _frequencyStep = 0.005f;
     private bool _fractal = false;
@@ -21,6 +22,8 @@ public class GameScene : Scene
     {
         _canvas = new Canvas (GraphicsDevice, Core.ScreenWidth / PixelSize, Core.ScreenHeight / PixelSize, PixelSize);
         _canvas.SetOffset ((Core.ScreenWidth - _canvas.PixelWidth) / 2, (Core.ScreenHeight - _canvas.PixelHeight) / 2);
+
+        _perlinNoise = new PerlinNoise (DateTime.Now.Second);
 
         GeneratePerlinNoise ();
 
@@ -58,13 +61,21 @@ public class GameScene : Scene
             throw new InvalidOperationException ("Canvas has not been initialized.");
         }
 
+        if (_perlinNoise is null)
+        {
+            throw new InvalidOperationException ("PerlinNoise has not been initialized.");
+        }
+
+        float warpFrequency = 0.5f * _frequency;
+        float warpAmplitude = 0.35f * (1 / _frequency);
+
         for (int x = 0; x < _canvas.Width; x++)
         {
             for (int y = 0; y < _canvas.Height; y++)
             {
                 float value = _fractal
-                    ? PerlinNoise.FractalBrownianMotionNoise (x * _frequency, y * _frequency, 6)
-                    : PerlinNoise.Noise (x * _frequency, y * _frequency);
+                    ? _perlinNoise.DomainWarpedNoise (x * _frequency, y * _frequency, 6, warpFrequency, warpAmplitude)
+                    : _perlinNoise.Noise (x * _frequency, y * _frequency);
                 _canvas.SetPixel (x, y, new Color (value, value, value, 1));
             }
         }
