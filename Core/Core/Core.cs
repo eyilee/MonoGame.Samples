@@ -1,8 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Gum.Forms;
+using Gum.Forms.Controls;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Samples.Library.Input;
+using MonoGameGum;
 using System;
 
 namespace MonoGame.Samples.Library;
@@ -39,6 +42,8 @@ public class Core : Game
 
     public static bool ExitOnEscape { get; set; }
 
+    public static GumService GumUI => GumService.Default;
+
     public Core (string title, int width, int height, bool isFullScreen)
     {
         if (s_instance != null)
@@ -73,7 +78,27 @@ public class Core : Game
 
         Input = new InputManager ();
 
+        InitializeUI ();
+
         base.Initialize ();
+    }
+
+    private void InitializeUI ()
+    {
+        GumUI.Initialize (this, DefaultVisualsVersion.V3);
+
+        if (GumUI.ContentLoader != null)
+        {
+            GumUI.ContentLoader.XnaContentManager = Content;
+        }
+
+        GumUI.UseKeyboardDefaults ();
+
+        GumUI.UseGamepadDefaults ();
+
+        FrameworkElement.TabReverseKeyCombos.Add (new KeyCombo () { PushedKey = Keys.Up });
+
+        FrameworkElement.TabKeyCombos.Add (new KeyCombo () { PushedKey = Keys.Down });
     }
 
     protected override void LoadContent ()
@@ -101,12 +126,16 @@ public class Core : Game
 
         s_activeScene?.Update (gameTime);
 
+        GumUI.Update (gameTime);
+
         base.Update (gameTime);
     }
 
     protected override void Draw (GameTime gameTime)
     {
         s_activeScene?.Draw (gameTime);
+
+        GumUI.Draw ();
 
         base.Draw (gameTime);
     }
