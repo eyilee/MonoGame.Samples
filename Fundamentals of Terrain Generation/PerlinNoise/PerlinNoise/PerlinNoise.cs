@@ -115,17 +115,17 @@ public class PerlinNoise
             value += Noise (x * frequency, y * frequency) * amplitude;
             maxValue += amplitude;
 
-            frequency *= 2;
-            amplitude *= 0.5f;
+            frequency *= 1.6f;
+            amplitude *= 0.625f;
         }
 
         return value / maxValue;
     }
 
-    public float DomainWarpedNoise (float x, float y, int octaves, float warpFrequency, float warpAmplitude)
+    public float DomainWarpedNoise (float x, float y, int octaves, float warpFrequency, float warpAmplitude, int warpOctaves)
     {
-        float warpX = x + FractalBrownianMotionNoise (x * warpFrequency + _warpOffsetX1, y * warpFrequency + _warpOffsetY1, 4) * warpAmplitude;
-        float warpY = y + FractalBrownianMotionNoise (x * warpFrequency + _warpOffsetX2, y * warpFrequency + _warpOffsetY2, 4) * warpAmplitude;
+        float warpX = x + FractalBrownianMotionNoise (x * warpFrequency + _warpOffsetX1, y * warpFrequency + _warpOffsetY1, warpOctaves) * warpAmplitude;
+        float warpY = y + FractalBrownianMotionNoise (x * warpFrequency + _warpOffsetX2, y * warpFrequency + _warpOffsetY2, warpOctaves) * warpAmplitude;
 
         return FractalBrownianMotionNoise (warpX, warpY, octaves);
     }

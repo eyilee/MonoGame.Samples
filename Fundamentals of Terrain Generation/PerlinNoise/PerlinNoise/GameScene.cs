@@ -9,7 +9,7 @@ namespace MonoGame.Samples.PerlinNoise;
 
 public class GameScene : Scene
 {
-    private const int PixelSize = 4;
+    private const int PixelSize = 2;
 
     private Canvas? _canvas;
 
@@ -74,7 +74,7 @@ public class GameScene : Scene
             for (int y = 0; y < _canvas.Height; y++)
             {
                 float value = _fractal
-                    ? _perlinNoise.DomainWarpedNoise (x * _frequency, y * _frequency, 6, warpFrequency, warpAmplitude)
+                    ? _perlinNoise.DomainWarpedNoise (x * _frequency, y * _frequency, 6, warpFrequency, warpAmplitude, 3)
                     : _perlinNoise.Noise (x * _frequency, y * _frequency);
                 _canvas.SetPixel (x, y, new Color (value, value, value, 1));
             }
