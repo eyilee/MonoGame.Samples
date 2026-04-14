@@ -88,14 +88,12 @@ public class GameScene : Scene
             for (int y = 0; y < _canvas.Height; y++)
             {
                 float temperature = _perlinNoiseTemperatur.DomainWarpedNoise (x * temperatureFrequency, y * temperatureFrequency, 6, warpFrequency, warpAmplitude, 3);
-                temperature = temperature.Gain (0.2f);
+                temperature = temperature.Gain (0.3f);
 
                 float humidity = _perlinNoiseHumidity.DomainWarpedNoise (x * humidityFrequency, y * humidityFrequency, 6, warpFrequency, warpAmplitude, 3);
-                humidity = humidity.Gain (0.2f);
+                humidity = humidity.Gain (0.3f);
 
-                Biome biome = BiomeResolver.ResolveSmooth (temperature, humidity);
-                Color color = BiomeResolver.ResolveColor (temperature, humidity);
-                _canvas.SetPixel (x, y, color);
+                _canvas.SetPixel (x, y, BiomeResolver.ResolveColor (temperature, humidity));
             }
         }
     }
