@@ -2,11 +2,13 @@
 
 public enum BiomeType
 {
-    Tundra,
-    Taiga,
-    Grassland,
-    TemperateForest,
-    Desert,
+    TropicalDesert,
+    TemperateDesert,
+    ColdDesert,
     Savanna,
-    TropicalRainforest
+    TemperateGrassland,
+    Tundra,
+    TropicalRainforest,
+    TemperateForest,
+    Taiga
 }

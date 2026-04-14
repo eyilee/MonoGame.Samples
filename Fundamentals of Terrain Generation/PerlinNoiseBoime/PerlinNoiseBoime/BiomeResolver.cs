@@ -1,49 +1,162 @@
 ﻿using Microsoft.Xna.Framework;
-using MonoGame.Samples.Library;
-using System.Collections.Generic;
+using System;
 
 namespace MonoGame.Samples.PerlinNoiseBiome;
 
 public class BiomeResolver
 {
-    private static readonly Dictionary<BiomeType, BiomeDefinition> s_biomeDefinitions = new ()
+    public static Biome ResolveSmooth (float temperature, float humidity)
     {
-        { BiomeType.Tundra, new BiomeDefinition (0.1f, 0.2f, 0.25f, new Color (0.85f, 0.88f, 0.92f)) },
-        { BiomeType.Taiga, new BiomeDefinition (0.25f, 0.5f, 0.25f, new Color (0.30f, 0.45f, 0.35f)) },
-        { BiomeType.Grassland, new BiomeDefinition (0.5f, 0.3f, 0.25f, new Color (0.55f, 0.75f, 0.35f)) },
-        { BiomeType.TemperateForest, new BiomeDefinition (0.5f, 0.6f, 0.25f, new Color (0.20f, 0.55f, 0.25f)) },
-        { BiomeType.Desert, new BiomeDefinition (0.9f, 0.1f, 0.3f, new Color (0.88f, 0.78f, 0.50f)) },
-        { BiomeType.Savanna, new BiomeDefinition (0.8f, 0.4f, 0.25f, new Color (0.70f, 0.65f, 0.30f)) },
-        { BiomeType.TropicalRainforest, new BiomeDefinition (0.9f, 0.8f, 0.3f, new Color (0.10f, 0.45f, 0.20f)) }
-    };
-
-    public static Biome Resolve (float temperature, float humidity)
-    {
+        float totalWeight = 0f;
+        float bestScore = float.MinValue;
         Biome biome = default;
 
-        foreach ((BiomeType biomeType, BiomeDefinition biomeDefinition) in s_biomeDefinitions)
+        foreach ((BiomeType type, BiomeDefinition definition) in BiomeDefinition.Definitions)
         {
-            float dx = temperature - biomeDefinition.Temperature;
-            float dy = humidity - biomeDefinition.Humidity;
-            float distance = dx * dx + dy * dy;
-
-            float weight = float.Exp (-distance * 6f);
-            if (weight <= 0f)
+            float rangeWeight = RangeWeight (temperature, humidity, definition);
+            if (rangeWeight <= 0f)
             {
                 continue;
             }
 
-            if (weight > biome.PrimaryWeight)
+            float idealWeight = IdealWeight (temperature, humidity, definition);
+
+            float score = rangeWeight * idealWeight * definition.Weight;
+
+            totalWeight += score;
+
+            if (score > bestScore)
             {
-                biome.Secondary = biome.Primary;
-                biome.SecondaryWeight = biome.PrimaryWeight;
-                biome.SecondaryColor = biome.PrimaryColor;
-                biome.Primary = biomeType;
-                biome.PrimaryWeight = weight;
-                biome.PrimaryColor = biomeDefinition.Color;
+                bestScore = score;
+                biome.Type = definition.Type;
+                biome.Color = definition.Color;
             }
         }
 
+        if (totalWeight == 0f)
+        {
+            BiomeType type = Resolve (temperature, humidity);
+            if (!BiomeDefinition.Definitions.TryGetValue (type, out BiomeDefinition definition))
+            {
+                throw new InvalidOperationException ($"Biome definition not found for type {type}");
+            }
+
+            biome.Type = definition.Type;
+            biome.Color = definition.Color;
+        }
+
         return biome;
+    }
+
+    public static Color ResolveColor (float temperature, float humidity)
+    {
+        Vector3 accum = Vector3.Zero;
+        float total = 0f;
+
+        foreach ((BiomeType type, BiomeDefinition definition) in BiomeDefinition.Definitions)
+        {
+            float w = RangeWeight (temperature, humidity, definition)
+                * IdealWeight (temperature, humidity, definition)
+                * definition.Weight;
+
+            accum += definition.Color.ToVector3 () * w;
+            total += w;
+        }
+
+        if (total == 0f)
+        {
+            BiomeType type = Resolve (temperature, humidity);
+            if (!BiomeDefinition.Definitions.TryGetValue (type, out BiomeDefinition definition))
+            {
+                throw new InvalidOperationException ($"Biome definition not found for type {type}");
+            }
+
+            return definition.Color;
+        }
+
+        return new Color (accum / total);
+    }
+
+    private static BiomeType Resolve (float temperature, float humidity)
+    {
+        if (temperature < 0.25f)
+        {
+            if (humidity < 0.20f)
+            {
+                return BiomeType.ColdDesert;
+            }
+
+            return BiomeType.Tundra;
+        }
+
+        if (temperature < 0.45f)
+        {
+            if (humidity < 0.20f)
+            {
+                return BiomeType.ColdDesert;
+            }
+            else if (humidity < 0.50f)
+            {
+                return BiomeType.TemperateGrassland;
+            }
+
+            return BiomeType.Taiga;
+        }
+
+        if (temperature < 0.75f)
+        {
+            if (humidity < 0.20f)
+            {
+                return BiomeType.TemperateDesert;
+            }
+            else if (humidity < 0.55f)
+            {
+                return BiomeType.TemperateGrassland;
+            }
+
+            return BiomeType.TemperateForest;
+        }
+
+        if (humidity < 0.20f)
+        {
+            return BiomeType.TropicalDesert;
+        }
+        else if (humidity < 0.65f)
+        {
+            return BiomeType.Savanna;
+        }
+
+        return BiomeType.TropicalRainforest;
+    }
+
+    private static float RangeWeight (float temperature, float humidity, in BiomeDefinition definition)
+    {
+        float dt = SmoothRange (temperature, definition.MinTemperature, definition.MaxTemperature);
+        float dh = SmoothRange (humidity, definition.MinHumidity, definition.MaxHumidity);
+
+        return dt * dh;
+    }
+
+    private static float SmoothRange (float value, float min, float max)
+    {
+        if (value < min || value > max)
+        {
+            return 0f;
+        }
+
+        float mid = (min + max) * 0.5f;
+        float half = (max - min) * 0.5f;
+
+        float x = 1f - float.Abs (value - mid) / half;
+
+        return x * x;
+    }
+
+    private static float IdealWeight (float temperature, float humidity, in BiomeDefinition definition)
+    {
+        float dx = temperature - definition.IdealTemperature;
+        float dy = humidity - definition.IdealHumidity;
+
+        return 1f / (1f + (dx * dx + dy * dy) * 10f);
     }
 }

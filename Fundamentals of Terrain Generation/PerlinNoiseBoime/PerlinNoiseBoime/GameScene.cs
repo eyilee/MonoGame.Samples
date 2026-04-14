@@ -1,9 +1,14 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Gum.Forms.Controls;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Samples.Library;
 using MonoGame.Samples.Library.Canvas;
 using MonoGame.Samples.Library.Input;
+using MonoGameGum;
+using MonoGameGum.GueDeriving;
 using System;
+using System.ComponentModel;
+using System.Xml.Linq;
 
 namespace MonoGame.Samples.PerlinNoiseBiome;
 
@@ -17,6 +22,13 @@ public class GameScene : Scene
     private PerlinNoise? _perlinNoiseHumidity;
     private float _frequency = 0.05f;
     private readonly float _frequencyStep = 0.005f;
+
+    public override void Initialize ()
+    {
+        GameUI.Initialize ();
+
+        base.Initialize ();
+    }
 
     public override void LoadContent ()
     {
@@ -76,34 +88,13 @@ public class GameScene : Scene
             for (int y = 0; y < _canvas.Height; y++)
             {
                 float temperature = _perlinNoiseTemperatur.DomainWarpedNoise (x * temperatureFrequency, y * temperatureFrequency, 6, warpFrequency, warpAmplitude, 3);
-                temperature = temperature.Gain (0.4f);
+                temperature = temperature.Gain (0.2f);
 
                 float humidity = _perlinNoiseHumidity.DomainWarpedNoise (x * humidityFrequency, y * humidityFrequency, 6, warpFrequency, warpAmplitude, 3);
-                humidity = humidity.Bias (0.4f);
+                humidity = humidity.Gain (0.2f);
 
-                Biome biome = BiomeResolver.Resolve (temperature, humidity);
-
-                float totalWeight = biome.PrimaryWeight + biome.SecondaryWeight;
-                if (totalWeight < 0.001f)
-                {
-                    _canvas.SetPixel (x, y, biome.PrimaryColor);
-                    continue;
-                }
-
-                Color color = ColorUtility.LerpHSV (biome.PrimaryColor, biome.SecondaryColor, 1f - biome.PrimaryWeight / totalWeight);
-
-                ColorUtility.RGBToHSV (color, out float h, out float s, out float v);
-
-                if (s < 0.05f)
-                {
-                    color = biome.PrimaryColor;
-                }
-                else
-                {
-                    s = float.Max (s, 0.25f);
-                    color = ColorUtility.HSVToRGB (h, s, v);
-                }
-
+                Biome biome = BiomeResolver.ResolveSmooth (temperature, humidity);
+                Color color = BiomeResolver.ResolveColor (temperature, humidity);
                 _canvas.SetPixel (x, y, color);
             }
         }
