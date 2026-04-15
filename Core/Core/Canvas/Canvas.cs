@@ -24,14 +24,15 @@ public class Canvas
 
     public int OffsetY { get; set; }
 
+    private bool _isDirty = true;
+
     public Canvas (GraphicsDevice graphicsDevice, int width, int height, int pixelSize = 1)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero (width, nameof (width));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero (height, nameof (height));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero (pixelSize, nameof (pixelSize));
 
-        _texture = new Texture2D (graphicsDevice, 1, 1);
-        _texture.SetData ([Color.White]);
+        _texture = new Texture2D (graphicsDevice, width, height, false, SurfaceFormat.Color);
 
         Width = width;
         Height = height;
@@ -39,13 +40,23 @@ public class Canvas
         Pixels = new Color[Width * Height];
     }
 
-    public void SetPixel (int x, int y, Color color) => Pixels[GetIndex (x, y)] = color;
+    public void SetPixel (int x, int y, Color color)
+    {
+        Pixels[GetIndex (x, y)] = color;
+
+        _isDirty = true;
+    }
 
     public Color GetPixel (int x, int y) => Pixels[GetIndex (x, y)];
 
     private int GetIndex (int x, int y) => y * Width + x;
 
-    public void Clear (Color? color) => Array.Fill (Pixels, color ?? Color.Transparent);
+    public void Clear (Color? color)
+    {
+        Array.Fill (Pixels, color ?? Color.Transparent);
+
+        _isDirty = true;
+    }
 
     public void SetOffset (int offsetX, int offsetY)
     {
@@ -61,12 +72,12 @@ public class Canvas
 
     public void Draw (SpriteBatch spriteBatch)
     {
-        for (int x = 0; x < Width; x++)
+        if (_isDirty)
         {
-            for (int y = 0; y < Height; y++)
-            {
-                spriteBatch.Draw (_texture, new Rectangle (OffsetX + x * PixelSize, OffsetY + y * PixelSize, PixelSize, PixelSize), GetPixel (x, y));
-            }
+            _texture.SetData (Pixels);
+            _isDirty = false;
         }
+
+        spriteBatch.Draw (_texture, new Rectangle (OffsetX, OffsetY, PixelWidth, PixelHeight), Color.White);
     }
 }
