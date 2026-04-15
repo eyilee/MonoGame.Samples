@@ -63,7 +63,7 @@ public class PerlinNoise
         _ => 0,
     };
 
-    public float FractalBrownianMotionNoise (float x, float y, int octaves)
+    public float FractalBrownianMotionNoise (float x, float y, int octaves, float lacunarity, float persistence)
     {
         if (octaves <= 0)
         {
@@ -81,18 +81,18 @@ public class PerlinNoise
             value += Noise (x * frequency, y * frequency) * amplitude;
             maxValue += amplitude;
 
-            frequency *= 1.6f;
-            amplitude *= 0.625f;
+            frequency *= lacunarity;
+            amplitude *= persistence;
         }
 
         return value / maxValue;
     }
 
-    public float DomainWarpedNoise (float x, float y, int octaves, float warpFrequency, float warpAmplitude, int warpOctaves)
+    public float DomainWarpedNoise (float x, float y, int octaves, float lacunarity, float persistence, float warpFrequency, float warpAmplitude)
     {
-        float warpX = x + FractalBrownianMotionNoise (x * warpFrequency + 13, y * warpFrequency + 19, warpOctaves) * warpAmplitude;
-        float warpY = y + FractalBrownianMotionNoise (x * warpFrequency + 23, y * warpFrequency + 29, warpOctaves) * warpAmplitude;
+        float warpX = x + Noise (x * warpFrequency + 12491, y * warpFrequency + 59011) * warpAmplitude;
+        float warpY = y + Noise (x * warpFrequency + 36629, y * warpFrequency + 56893) * warpAmplitude;
 
-        return FractalBrownianMotionNoise (warpX, warpY, octaves);
+        return FractalBrownianMotionNoise (warpX, warpY, octaves, lacunarity, persistence);
     }
 }

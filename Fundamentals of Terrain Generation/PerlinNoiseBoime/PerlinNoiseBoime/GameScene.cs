@@ -1,14 +1,9 @@
-﻿using Gum.Forms.Controls;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Samples.Library;
 using MonoGame.Samples.Library.Canvas;
 using MonoGame.Samples.Library.Input;
-using MonoGameGum;
-using MonoGameGum.GueDeriving;
 using System;
-using System.ComponentModel;
-using System.Xml.Linq;
 
 namespace MonoGame.Samples.PerlinNoiseBiome;
 
@@ -17,10 +12,13 @@ public class GameScene : Scene
     private const int PixelSize = 2;
 
     private Canvas? _canvas;
+    private DisplayMode _displayMode;
 
+    private PerlinNoise? _perlinNoiseTmacro;
+    private PerlinNoise? _perlinNoiseHmacro;
     private PerlinNoise? _perlinNoiseTemperatur;
     private PerlinNoise? _perlinNoiseHumidity;
-    private float _frequency = 0.05f;
+    private float _frequency = 1f;
     private readonly float _frequencyStep = 0.005f;
 
     public override void Initialize ()
@@ -35,11 +33,15 @@ public class GameScene : Scene
         _canvas = new Canvas (GraphicsDevice, Core.ScreenWidth / PixelSize, Core.ScreenHeight / PixelSize, PixelSize);
         _canvas.SetOffset ((Core.ScreenWidth - _canvas.PixelWidth) / 2, (Core.ScreenHeight - _canvas.PixelHeight) / 2);
 
-        _perlinNoiseTemperatur = new PerlinNoise (DateTime.Now.Second);
-        _perlinNoiseHumidity = new PerlinNoise (DateTime.Now.Second + 1);
+        _perlinNoiseTmacro = new PerlinNoise (DateTime.Now.Second);
+        _perlinNoiseHmacro = new PerlinNoise (DateTime.Now.Second + 1);
+        _perlinNoiseTemperatur = new PerlinNoise (DateTime.Now.Second + 2);
+        _perlinNoiseHumidity = new PerlinNoise (DateTime.Now.Second + 3);
 
         GeneratePerlinNoiseBiome ();
 
+        Input.Keyboard.SubscribePressed (Keys.N, NextMap);
+        Input.Keyboard.SubscribePressed (Keys.T, ToggleMode);
         Input.Keyboard.SubscribePressed (Keys.Add, IncreaseFrequency);
         Input.Keyboard.SubscribePressed (Keys.Subtract, DecreaseFrequency);
         Input.Mouse.SubscribeWheelMoved (ChangeFrequency);
@@ -73,29 +75,77 @@ public class GameScene : Scene
             throw new InvalidOperationException ("Canvas has not been initialized.");
         }
 
-        if (_perlinNoiseTemperatur is null || _perlinNoiseHumidity is null)
+        if (_perlinNoiseTmacro is null || _perlinNoiseHmacro is null || _perlinNoiseTemperatur is null || _perlinNoiseHumidity is null)
         {
             throw new InvalidOperationException ("PerlinNoise has not been initialized.");
         }
 
-        float temperatureFrequency = 0.05f * _frequency;
-        float humidityFrequency = 0.2f * _frequency;
-        float warpFrequency = 0.5f;
-        float warpAmplitude = 0.35f;
+        float macroFrequency = 0.003f;
+        float temperatureFrequency = 0.03f * _frequency;
+        float humidityFrequency = 0.03f * _frequency;
+
+        float warpScale = 20f;
 
         for (int x = 0; x < _canvas.Width; x++)
         {
             for (int y = 0; y < _canvas.Height; y++)
             {
-                float temperature = _perlinNoiseTemperatur.DomainWarpedNoise (x * temperatureFrequency, y * temperatureFrequency, 6, warpFrequency, warpAmplitude, 3);
-                temperature = temperature.Gain (0.3f);
+                float tmacro = _perlinNoiseTmacro.FractalBrownianMotionNoise (x * macroFrequency, y * macroFrequency, 4, 2f, 0.5f);
+                tmacro = tmacro * 2f - 1f;
 
-                float humidity = _perlinNoiseHumidity.DomainWarpedNoise (x * humidityFrequency, y * humidityFrequency, 6, warpFrequency, warpAmplitude, 3);
-                humidity = humidity.Gain (0.3f);
+                float hmacro = _perlinNoiseHmacro.FractalBrownianMotionNoise (x * macroFrequency, y * macroFrequency, 4, 2f, 0.5f);
+                hmacro = hmacro * 2f - 1f;
 
-                _canvas.SetPixel (x, y, BiomeResolver.ResolveColor (temperature, humidity));
+                float tx = x + tmacro * warpScale;
+                float ty = y + tmacro * warpScale;
+
+                float hx = x + hmacro * warpScale;
+                float hy = y + hmacro * warpScale;
+
+                float temperature = _perlinNoiseTemperatur.FractalBrownianMotionNoise (tx * temperatureFrequency, ty * temperatureFrequency, 4, 2f, 0.5f);
+                temperature.SmoothStep ();
+
+                float latitude = (float)y / _canvas.Height;
+                temperature = float.Lerp (temperature, 1f - float.Abs (latitude * 2f - 1f), 0.4f);
+
+                float humidity = _perlinNoiseHumidity.FractalBrownianMotionNoise (hx * humidityFrequency, hy * humidityFrequency, 4, 2f, 0.5f);
+                humidity = humidity.SmoothStep ();
+
+                switch (_displayMode)
+                {
+                    case DisplayMode.Biome:
+                        _canvas.SetPixel (x, y, BiomeResolver.ResolveColor (temperature, humidity));
+                        break;
+                    case DisplayMode.Temperature:
+                        _canvas.SetPixel (x, y, Color.Lerp (Color.Blue, Color.Red, temperature));
+                        break;
+                    case DisplayMode.Humidity:
+                        _canvas.SetPixel (x, y, Color.Lerp (Color.Brown, Color.Green, humidity));
+                        break;
+                    case DisplayMode.TemperatureMacro:
+                        _canvas.SetPixel (x, y, Color.Lerp (Color.Black, Color.White, (tmacro + 1f) * 0.5f));
+                        break;
+                    case DisplayMode.HumidityMacro:
+                        _canvas.SetPixel (x, y, Color.Lerp (Color.Black, Color.White, (hmacro + 1f) * 0.5f));
+                        break;
+                }
             }
         }
+    }
+
+    private void NextMap (object? sender, KeyboardEventArgs eventArgs)
+    {
+        _perlinNoiseTmacro = new PerlinNoise (DateTime.Now.Second);
+        _perlinNoiseTemperatur = new PerlinNoise (DateTime.Now.Second + 1);
+        _perlinNoiseHumidity = new PerlinNoise (DateTime.Now.Second + 2);
+
+        GeneratePerlinNoiseBiome ();
+    }
+
+    private void ToggleMode (object? sender, KeyboardEventArgs e)
+    {
+        _displayMode = (DisplayMode)(((int)_displayMode + 1) % Enum.GetValues (typeof (DisplayMode)).Length);
+        GeneratePerlinNoiseBiome ();
     }
 
     private void IncreaseFrequency (object? sender, KeyboardEventArgs eventArgs)

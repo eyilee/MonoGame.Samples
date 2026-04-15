@@ -21,51 +21,21 @@ public struct BiomeDefinition
 
     public static readonly Dictionary<BiomeType, BiomeDefinition> Definitions = new ()
     {
+        // HOT BAND
+
         {
             BiomeType.TropicalDesert,
-            new BiomeDefinition ()
+            new ()
             {
                 Type = BiomeType.TropicalDesert,
                 MinTemperature = 0.75f,
                 MaxTemperature = 1.00f,
-                IdealTemperature = 0.95f,
-                MinHumidity  = 0.00f,
-                MaxHumidity  = 0.20f,
+                IdealTemperature = 0.92f,
+                MinHumidity = 0.00f,
+                MaxHumidity = 0.20f,
                 IdealHumidity = 0.05f,
-                Weight = 1.2f,
-                Color = new Color (237, 201, 175)
-            }
-        },
-
-        {
-            BiomeType.TemperateDesert,
-            new ()
-            {
-                Type = BiomeType.TemperateDesert,
-                MinTemperature = 0.40f,
-                MaxTemperature = 0.75f,
-                IdealTemperature = 0.55f,
-                MinHumidity  = 0.00f,
-                MaxHumidity  = 0.20f,
-                IdealHumidity = 0.10f,
-                Weight = 1.0f,
-                Color = new Color (210, 180, 140)
-            }
-        },
-
-        {
-            BiomeType.ColdDesert,
-            new ()
-            {
-                Type = BiomeType.ColdDesert,
-                MinTemperature = 0.00f,
-                MaxTemperature = 0.35f,
-                IdealTemperature = 0.20f,
-                MinHumidity  = 0.00f,
-                MaxHumidity  = 0.20f,
-                IdealHumidity = 0.10f,
-                Weight = 0.9f,
-                Color = new Color (176, 196, 222)
+                Weight = 1.1f,
+                Color = new Color (233, 196, 150)
             }
         },
 
@@ -74,14 +44,64 @@ public struct BiomeDefinition
             new ()
             {
                 Type = BiomeType.Savanna,
-                MinTemperature = 0.70f,
+                MinTemperature = 0.75f,
                 MaxTemperature = 1.00f,
                 IdealTemperature = 0.85f,
-                MinHumidity  = 0.35f,
-                MaxHumidity  = 0.65f,
-                IdealHumidity = 0.50f,
+                MinHumidity = 0.20f,
+                MaxHumidity = 0.50f,
+                IdealHumidity = 0.35f,
+                Weight = 0.9f,
+                Color = new Color (176, 160, 80)
+            }
+        },
+
+        {
+            BiomeType.TropicalSeasonalForest,
+            new ()
+            {
+                Type = BiomeType.TropicalSeasonalForest,
+                MinTemperature = 0.75f,
+                MaxTemperature = 1.00f,
+                IdealTemperature = 0.88f,
+                MinHumidity = 0.50f,
+                MaxHumidity = 0.80f,
+                IdealHumidity = 0.65f,
                 Weight = 1.0f,
-                Color = new Color (189, 183, 107)
+                Color = new Color (70, 140, 85)
+            }
+        },
+
+        {
+            BiomeType.TropicalRainForest,
+            new ()
+            {
+                Type = BiomeType.TropicalRainForest,
+                MinTemperature = 0.75f,
+                MaxTemperature = 1.00f,
+                IdealTemperature = 0.90f,
+                MinHumidity = 0.80f,
+                MaxHumidity = 1.00f,
+                IdealHumidity = 0.92f,
+                Weight = 1.1f,
+                Color = new Color (30, 110, 60)
+            }
+        },
+
+        // WARM BAND
+
+        {
+            BiomeType.TemperateDesert,
+            new ()
+            {
+                Type = BiomeType.TemperateDesert,
+                MinTemperature = 0.45f,
+                MaxTemperature = 0.75f,
+                IdealTemperature = 0.55f,
+                MinHumidity = 0.00f,
+                MaxHumidity = 0.20f,
+                IdealHumidity = 0.10f,
+                Weight = 1.0f,
+                Color = new Color (200, 170, 130)
             }
         },
 
@@ -90,46 +110,14 @@ public struct BiomeDefinition
             new ()
             {
                 Type = BiomeType.TemperateGrassland,
-                MinTemperature = 0.40f,
-                MaxTemperature = 0.70f,
+                MinTemperature = 0.45f,
+                MaxTemperature = 0.75f,
                 IdealTemperature = 0.55f,
-                MinHumidity  = 0.25f,
-                MaxHumidity  = 0.55f,
-                IdealHumidity = 0.40f,
+                MinHumidity = 0.20f,
+                MaxHumidity = 0.50f,
+                IdealHumidity = 0.35f,
                 Weight = 1.0f,
-                Color = new Color (140, 170, 90)
-            }
-        },
-
-        {
-            BiomeType.Tundra,
-            new ()
-            {
-                Type = BiomeType.Tundra,
-                MinTemperature = 0.00f,
-                MaxTemperature = 0.25f,
-                IdealTemperature = 0.10f,
-                MinHumidity  = 0.25f,
-                MaxHumidity  = 0.60f,
-                IdealHumidity = 0.40f,
-                Weight = 1.0f,
-                Color = new Color (198, 226, 255)
-            }
-        },
-
-        {
-            BiomeType.TropicalRainforest,
-            new ()
-            {
-                Type = BiomeType.TropicalRainforest,
-                MinTemperature = 0.75f,
-                MaxTemperature = 1.00f,
-                IdealTemperature = 0.90f,
-                MinHumidity  = 0.75f,
-                MaxHumidity  = 1.00f,
-                IdealHumidity = 0.90f,
-                Weight = 1.0f,
-                Color = new Color (42, 138, 64)
+                Color = new Color (130, 160, 85)
             }
         },
 
@@ -141,11 +129,61 @@ public struct BiomeDefinition
                 MinTemperature = 0.45f,
                 MaxTemperature = 0.75f,
                 IdealTemperature = 0.60f,
-                MinHumidity  = 0.55f,
-                MaxHumidity  = 0.85f,
-                IdealHumidity = 0.70f,
-                Weight = 1.2f,
-                Color = new Color (80, 160, 80)
+                MinHumidity = 0.50f,
+                MaxHumidity = 0.80f,
+                IdealHumidity = 0.65f,
+                Weight = 1.1f,
+                Color = new Color (70, 130, 70)
+            }
+        },
+
+        {
+            BiomeType.TemperateRainforest,
+            new ()
+            {
+                Type = BiomeType.TemperateRainforest,
+                MinTemperature = 0.45f,
+                MaxTemperature = 0.75f,
+                IdealTemperature = 0.60f,
+                MinHumidity = 0.80f,
+                MaxHumidity = 1.00f,
+                IdealHumidity = 0.90f,
+                Weight = 1.05f,
+                Color = new Color (50, 120, 90)
+            }
+        },
+
+        // COOL BAND
+
+        {
+            BiomeType.ColdDesert,
+            new ()
+            {
+                Type = BiomeType.ColdDesert,
+                MinTemperature = 0.20f,
+                MaxTemperature = 0.45f,
+                IdealTemperature = 0.30f,
+                MinHumidity = 0.00f,
+                MaxHumidity = 0.20f,
+                IdealHumidity = 0.10f,
+                Weight = 0.95f,
+                Color = new Color (170, 180, 190)
+            }
+        },
+
+        {
+            BiomeType.Steppe,
+            new ()
+            {
+                Type = BiomeType.Steppe,
+                MinTemperature = 0.20f,
+                MaxTemperature = 0.45f,
+                IdealTemperature = 0.30f,
+                MinHumidity = 0.20f,
+                MaxHumidity = 0.45f,
+                IdealHumidity = 0.30f,
+                Weight = 1.0f,
+                Color = new Color (140, 155, 100)
             }
         },
 
@@ -157,11 +195,45 @@ public struct BiomeDefinition
                 MinTemperature = 0.20f,
                 MaxTemperature = 0.45f,
                 IdealTemperature = 0.30f,
-                MinHumidity  = 0.45f,
-                MaxHumidity  = 0.75f,
+                MinHumidity = 0.45f,
+                MaxHumidity = 0.75f,
                 IdealHumidity = 0.60f,
                 Weight = 1.0f,
-                Color = new Color (110, 130, 130)
+                Color = new Color (90, 120, 120)
+            }
+        },
+
+        // COLD BAND
+
+        {
+            BiomeType.PolarDesert,
+            new ()
+            {
+                Type = BiomeType.PolarDesert,
+                MinTemperature = 0.00f,
+                MaxTemperature = 0.20f,
+                IdealTemperature = 0.05f,
+                MinHumidity = 0.00f,
+                MaxHumidity = 0.25f,
+                IdealHumidity = 0.10f,
+                Weight = 0.9f,
+                Color = new Color (210, 220, 230)
+            }
+        },
+
+        {
+            BiomeType.Tundra,
+            new ()
+            {
+                Type = BiomeType.Tundra,
+                MinTemperature = 0.00f,
+                MaxTemperature = 0.25f,
+                IdealTemperature = 0.10f,
+                MinHumidity = 0.25f,
+                MaxHumidity = 0.70f,
+                IdealHumidity = 0.45f,
+                Weight = 1.0f,
+                Color = new Color (170, 200, 200)
             }
         }
     };

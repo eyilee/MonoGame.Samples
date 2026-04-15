@@ -50,20 +50,28 @@ public class BiomeResolver
 
     public static Color ResolveColor (float temperature, float humidity)
     {
-        Vector3 accum = Vector3.Zero;
-        float total = 0f;
+        float bestScore = float.MinValue;
+        Color bestColor = Color.White;
 
         foreach ((BiomeType type, BiomeDefinition definition) in BiomeDefinition.Definitions)
         {
-            float w = RangeWeight (temperature, humidity, definition)
+            float weight = RangeWeight (temperature, humidity, definition)
                 * IdealWeight (temperature, humidity, definition)
                 * definition.Weight;
 
-            accum += definition.Color.ToVector3 () * w;
-            total += w;
+            if (weight <= 0f)
+            {
+                continue;
+            }
+
+            if (weight > bestScore)
+            {
+                bestScore = weight;
+                bestColor = definition.Color;
+            }
         }
 
-        if (total == 0f)
+        if (bestScore == float.MinValue)
         {
             BiomeType type = Resolve (temperature, humidity);
             if (!BiomeDefinition.Definitions.TryGetValue (type, out BiomeDefinition definition))
@@ -74,7 +82,7 @@ public class BiomeResolver
             return definition.Color;
         }
 
-        return new Color (accum / total);
+        return bestColor;
     }
 
     private static BiomeType Resolve (float temperature, float humidity)
@@ -126,7 +134,7 @@ public class BiomeResolver
             return BiomeType.Savanna;
         }
 
-        return BiomeType.TropicalRainforest;
+        return BiomeType.TropicalRainForest;
     }
 
     private static float RangeWeight (float temperature, float humidity, in BiomeDefinition definition)
