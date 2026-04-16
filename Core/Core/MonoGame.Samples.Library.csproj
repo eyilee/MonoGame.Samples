@@ -17,10 +17,7 @@
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  <Target Name="CompileShaders"
-          BeforeTargets="Build"
-          Inputs="@(ShaderFiles)"
-          Outputs="@(ShaderFiles -> 'SDF\Resources\%(Filename).mgfxo')">
+  <Target Name="CompileShaders" BeforeTargets="Build" Inputs="@(ShaderFiles)" Outputs="@(ShaderFiles -> 'SDF\Resources\%(Filename).mgfxo')">
     <Exec Command="dotnet mgfxc %(ShaderFiles.Identity) SDF\Resources\%(Filename).mgfxo /Profile:OpenGL" />
   </Target>
 </Project>

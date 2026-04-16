@@ -8,15 +8,15 @@ namespace MonoGame.Samples.Library;
 
 public abstract class Scene : IDisposable
 {
-    protected ContentManager Content { get; }
-
     public static GraphicsDevice GraphicsDevice => Core.GraphicsDevice;
 
     public static SpriteBatch SpriteBatch => Core.SpriteBatch;
 
     public static InputManager Input => Core.Input;
 
-    public bool IsDisposed { get; private set; }
+    protected ContentManager Content { get; }
+
+    private bool _disposed;
 
     public Scene ()
     {
@@ -52,17 +52,15 @@ public abstract class Scene : IDisposable
 
     protected virtual void Dispose (bool disposing)
     {
-        if (IsDisposed)
+        if (!_disposed)
         {
-            return;
-        }
+            if (disposing)
+            {
+                UnloadContent ();
+                Content.Dispose ();
+            }
 
-        if (disposing)
-        {
-            UnloadContent ();
-            Content.Dispose ();
+            _disposed = true;
         }
-
-        IsDisposed = true;
     }
 }

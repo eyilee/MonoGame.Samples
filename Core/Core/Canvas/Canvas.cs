@@ -4,10 +4,8 @@ using System;
 
 namespace MonoGame.Samples.Library.Canvas;
 
-public class Canvas
+public class Canvas : IDisposable
 {
-    private readonly Texture2D _texture;
-
     public int Width { get; init; }
 
     public int Height { get; init; }
@@ -18,13 +16,15 @@ public class Canvas
 
     public int PixelHeight => Height * PixelSize;
 
-    public Color[] Pixels { get; init; }
-
     public int OffsetX { get; set; }
 
     public int OffsetY { get; set; }
 
+    private readonly Texture2D _texture;
+    private readonly Color[] _pixels;
     private bool _isDirty = true;
+
+    private bool _disposed;
 
     public Canvas (GraphicsDevice graphicsDevice, int width, int height, int pixelSize = 1)
     {
@@ -33,27 +33,29 @@ public class Canvas
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero (pixelSize, nameof (pixelSize));
 
         _texture = new Texture2D (graphicsDevice, width, height, false, SurfaceFormat.Color);
+        _pixels = new Color[width * height];
 
         Width = width;
         Height = height;
         PixelSize = pixelSize;
-        Pixels = new Color[Width * Height];
     }
+
+    ~Canvas () => Dispose (false);
 
     public void SetPixel (int x, int y, Color color)
     {
-        Pixels[GetIndex (x, y)] = color;
+        _pixels[GetIndex (x, y)] = color;
 
         _isDirty = true;
     }
 
-    public Color GetPixel (int x, int y) => Pixels[GetIndex (x, y)];
+    public Color GetPixel (int x, int y) => _pixels[GetIndex (x, y)];
 
     private int GetIndex (int x, int y) => y * Width + x;
 
     public void Clear (Color? color)
     {
-        Array.Fill (Pixels, color ?? Color.Transparent);
+        Array.Fill (_pixels, color ?? Color.Transparent);
 
         _isDirty = true;
     }
@@ -74,10 +76,29 @@ public class Canvas
     {
         if (_isDirty)
         {
-            _texture.SetData (Pixels);
+            _texture.SetData (_pixels);
             _isDirty = false;
         }
 
         spriteBatch.Draw (_texture, new Rectangle (OffsetX, OffsetY, PixelWidth, PixelHeight), Color.White);
+    }
+
+    public void Dispose ()
+    {
+        Dispose (true);
+        GC.SuppressFinalize (this);
+    }
+
+    protected virtual void Dispose (bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _texture.Dispose ();
+            }
+
+            _disposed = true;
+        }
     }
 }

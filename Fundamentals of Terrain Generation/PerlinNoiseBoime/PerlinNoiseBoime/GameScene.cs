@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Samples.Library;
 using MonoGame.Samples.Library.Canvas;
+using MonoGame.Samples.Library.GumUI;
 using MonoGame.Samples.Library.Input;
 using System;
 
@@ -9,8 +10,9 @@ namespace MonoGame.Samples.PerlinNoiseBiome;
 
 public class GameScene : Scene
 {
-    private const int PixelSize = 2;
+    private GameUI? _gameUI;
 
+    private const int PixelSize = 2;
     private Canvas? _canvas;
     private DisplayMode _displayMode;
 
@@ -23,7 +25,19 @@ public class GameScene : Scene
 
     public override void Initialize ()
     {
-        GameUI.Initialize ();
+        _gameUI = GumUI.Instantiate (new GameUI ());
+
+        int seed = Environment.TickCount;
+        _perlinNoiseTmacro = new PerlinNoise (seed);
+        _perlinNoiseHmacro = new PerlinNoise (seed + 1);
+        _perlinNoiseTemperatur = new PerlinNoise (seed + 2);
+        _perlinNoiseHumidity = new PerlinNoise (seed + 3);
+
+        Input.Keyboard.SubscribePressed (Keys.N, NextMap);
+        Input.Keyboard.SubscribePressed (Keys.T, ToggleMode);
+        Input.Keyboard.SubscribePressed (Keys.Add, IncreaseFrequency);
+        Input.Keyboard.SubscribePressed (Keys.Subtract, DecreaseFrequency);
+        Input.Mouse.SubscribeWheelMoved (ChangeFrequency);
 
         base.Initialize ();
     }
@@ -33,28 +47,34 @@ public class GameScene : Scene
         _canvas = new Canvas (GraphicsDevice, Core.ScreenWidth / PixelSize, Core.ScreenHeight / PixelSize, PixelSize);
         _canvas.SetOffset ((Core.ScreenWidth - _canvas.PixelWidth) / 2, (Core.ScreenHeight - _canvas.PixelHeight) / 2);
 
-        _perlinNoiseTmacro = new PerlinNoise (DateTime.Now.Second);
-        _perlinNoiseHmacro = new PerlinNoise (DateTime.Now.Second + 1);
-        _perlinNoiseTemperatur = new PerlinNoise (DateTime.Now.Second + 2);
-        _perlinNoiseHumidity = new PerlinNoise (DateTime.Now.Second + 3);
-
         GeneratePerlinNoiseBiome ();
-
-        Input.Keyboard.SubscribePressed (Keys.N, NextMap);
-        Input.Keyboard.SubscribePressed (Keys.T, ToggleMode);
-        Input.Keyboard.SubscribePressed (Keys.Add, IncreaseFrequency);
-        Input.Keyboard.SubscribePressed (Keys.Subtract, DecreaseFrequency);
-        Input.Mouse.SubscribeWheelMoved (ChangeFrequency);
 
         base.LoadContent ();
     }
 
     public override void UnloadContent ()
     {
-        Input.Keyboard.UnsubscribePressed (Keys.Add, IncreaseFrequency);
-        Input.Keyboard.UnsubscribePressed (Keys.Subtract, DecreaseFrequency);
+        _canvas?.Dispose ();
+        _canvas = null;
 
         base.UnloadContent ();
+    }
+
+    protected override void Dispose (bool disposing)
+    {
+        if (disposing)
+        {
+            _gameUI?.Detach ();
+            _gameUI = null;
+
+            Input.Keyboard.UnsubscribePressed (Keys.N, NextMap);
+            Input.Keyboard.UnsubscribePressed (Keys.T, ToggleMode);
+            Input.Keyboard.UnsubscribePressed (Keys.Add, IncreaseFrequency);
+            Input.Keyboard.UnsubscribePressed (Keys.Subtract, DecreaseFrequency);
+            Input.Mouse.UnsubscribeWheelMoved (ChangeFrequency);
+        }
+
+        base.Dispose (disposing);
     }
 
     public override void Draw (GameTime gameTime)

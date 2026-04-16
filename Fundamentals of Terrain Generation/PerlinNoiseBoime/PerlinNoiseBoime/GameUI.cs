@@ -1,74 +1,78 @@
 ﻿using Gum.Forms.Controls;
+using Gum.Wireframe;
 using Microsoft.Xna.Framework;
+using MonoGame.Samples.Library.GumUI;
 using MonoGameGum;
 using MonoGameGum.GueDeriving;
+using System.Collections.Generic;
 
 namespace MonoGame.Samples.PerlinNoiseBiome
 {
-    public class GameUI
+    public class GameUI : GumUI
     {
-        public static void Initialize ()
-        {
-            Panel panel = new ();
-            panel.AddToRoot ();
+        private readonly List<BiomeItem> _biomeItems = [];
 
+        protected override void OnInstantiate ()
+        {
             ColoredRectangleRuntime background = new ()
             {
-                Color = new Color (1f, 1f, 1f, 0.6f)
+                Color = new Color (1f, 1f, 1f, 0.6f),
             };
 
-            background.Dock (Gum.Wireframe.Dock.Fill);
-            panel.AddChild (background);
+            background.Dock (Dock.Fill);
+            rootObject.AddChild (background);
 
             StackPanel stackPanel = new ()
             {
                 Spacing = 0f,
             };
 
-            panel.AddChild (stackPanel);
+            rootObject.AddChild (stackPanel);
 
             foreach ((BiomeType biomeType, BiomeDefinition biomeDefinition) in BiomeDefinition.Definitions)
             {
-                stackPanel.AddChild (CreateBiomeLabel (biomeType, biomeDefinition));
+                _biomeItems.Add (Instantiate (new BiomeItem (biomeType, biomeDefinition), stackPanel.Visual));
             }
         }
 
-        private static Panel CreateBiomeLabel (BiomeType biomeType, BiomeDefinition biomeDefinition)
+        public class BiomeItem (BiomeType biomeType, BiomeDefinition biomeDefinition) : GumUI
         {
-            Panel panel = new ();
-
-            ColoredRectangleRuntime color = new ()
+            protected override void OnInstantiate ()
             {
-                Width = 20,
-                Height = 20,
-                Color = biomeDefinition.Color
-            };
+                ColoredRectangleRuntime color = new ()
+                {
+                    Width = 20,
+                    WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+                    Height = 20,
+                    HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+                    Color = biomeDefinition.Color
+                };
 
-            color.Anchor (Gum.Wireframe.Anchor.Left);
-            color.X = 2f;
-            panel.AddChild (color);
+                color.Anchor (Anchor.Left);
+                color.X = 2f;
+                rootObject.AddChild (color);
 
-            ContainerRuntime textContainer = new ()
-            {
-                Width = 4,
-                WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToChildren,
-                Height = 24
-            };
+                ContainerRuntime textContainer = new ()
+                {
+                    Width = 2,
+                    WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToChildren,
+                    Height = 24,
+                    HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+                };
 
-            textContainer.Anchor (Gum.Wireframe.Anchor.Left);
-            textContainer.X = 24;
-            panel.AddChild (textContainer);
+                textContainer.Anchor (Anchor.Left);
+                textContainer.X = 24;
+                rootObject.AddChild (textContainer);
 
-            TextRuntime text = new ()
-            {
-                Text = biomeType.ToString (),
-                Color = Color.Gray,
-            };
+                TextRuntime text = new ()
+                {
+                    Text = biomeType.ToString (),
+                    Color = Color.Gray,
+                };
 
-            text.Anchor (Gum.Wireframe.Anchor.Left);
-            textContainer.AddChild (text);
-
-            return panel;
+                text.Anchor (Anchor.Left);
+                textContainer.AddChild (text);
+            }
         }
     }
 }
