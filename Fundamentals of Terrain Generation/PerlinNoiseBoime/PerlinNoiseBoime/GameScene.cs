@@ -27,12 +27,6 @@ public class GameScene : Scene
     {
         _gameUI = GumUI.Instantiate (new GameUI ());
 
-        int seed = Environment.TickCount;
-        _perlinNoiseTmacro = new PerlinNoise (seed);
-        _perlinNoiseHmacro = new PerlinNoise (seed + 1);
-        _perlinNoiseTemperatur = new PerlinNoise (seed + 2);
-        _perlinNoiseHumidity = new PerlinNoise (seed + 3);
-
         Input.Keyboard.SubscribePressed (Keys.N, NextMap);
         Input.Keyboard.SubscribePressed (Keys.T, ToggleMode);
         Input.Keyboard.SubscribePressed (Keys.Add, IncreaseFrequency);
