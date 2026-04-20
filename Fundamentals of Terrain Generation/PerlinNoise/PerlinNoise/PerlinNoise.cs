@@ -78,10 +78,10 @@ public class PerlinNoise
         1 => -x + y,
         2 => x - y,
         3 => -x - y,
-        4 => x,
-        5 => -x,
-        6 => y,
-        7 => -y,
+        4 => x * float.Sqrt (2),
+        5 => -x * float.Sqrt (2),
+        6 => y * float.Sqrt (2),
+        7 => -y * float.Sqrt (2),
         _ => 0,
     };
 
