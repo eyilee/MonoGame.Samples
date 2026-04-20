@@ -47,6 +47,7 @@ public class GameScene : Scene
         _canvas = new Canvas (GraphicsDevice, Core.ScreenWidth / PixelSize, Core.ScreenHeight / PixelSize, PixelSize);
         _canvas.SetOffset ((Core.ScreenWidth - _canvas.PixelWidth) / 2, (Core.ScreenHeight - _canvas.PixelHeight) / 2);
 
+        SetupGenerator ();
         GeneratePerlinNoiseBiome ();
 
         base.LoadContent ();
@@ -86,6 +87,15 @@ public class GameScene : Scene
         SpriteBatch.End ();
 
         base.Draw (gameTime);
+    }
+
+    private void SetupGenerator ()
+    {
+        int seed = Environment.TickCount;
+        _perlinNoiseTmacro = new PerlinNoise (seed);
+        _perlinNoiseHmacro = new PerlinNoise (seed + 1);
+        _perlinNoiseTemperatur = new PerlinNoise (seed + 2);
+        _perlinNoiseHumidity = new PerlinNoise (seed + 3);
     }
 
     private void GeneratePerlinNoiseBiome ()
@@ -155,10 +165,7 @@ public class GameScene : Scene
 
     private void NextMap (object? sender, KeyboardEventArgs eventArgs)
     {
-        _perlinNoiseTmacro = new PerlinNoise (DateTime.Now.Second);
-        _perlinNoiseTemperatur = new PerlinNoise (DateTime.Now.Second + 1);
-        _perlinNoiseHumidity = new PerlinNoise (DateTime.Now.Second + 2);
-
+        SetupGenerator ();
         GeneratePerlinNoiseBiome ();
     }
 
