@@ -1,5 +1,5 @@
 # PerlinNoiseHash
-Instead of classic Perlin Noise, generate a gradient permuation table first, then use xor-shift hashing function to determine index.
+Instead of using classic Perlin Noise, generate a gradient permutation table first, then use Xorshift hash function to determine index.
 
 The default frequency is set to 0.03, and the step size is 0.003.
 
