@@ -18,5 +18,7 @@ Samples of algorithms introduced in [Terrain.pdf](https://www.cs.cmu.edu/~112-n2
 
 ## Perlin Noise Terrain Generation
 [PerlinNoise](PerlinNoise)
+[PerlinNoiseBiome](PerlinNoiseBiome)
+[PerlinNoiseHash](PerlinNoiseHas)
 
 ## Simplex Noise Terrain Generation
