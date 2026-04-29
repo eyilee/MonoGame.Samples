@@ -17,8 +17,8 @@ Samples of algorithms introduced in [Terrain.pdf](https://www.cs.cmu.edu/~112-n2
 [DiamondSquare](DiamondSquare)
 
 ## Perlin Noise Terrain Generation
-[PerlinNoise](PerlinNoise)
-[PerlinNoiseBiome](PerlinNoiseBiome)
-[PerlinNoiseHash](PerlinNoiseHas)
+[PerlinNoise](PerlinNoise)\
+[PerlinNoiseBiome](PerlinNoiseBiome)\
+[PerlinNoiseHash](PerlinNoiseHash)
 
 ## Simplex Noise Terrain Generation
