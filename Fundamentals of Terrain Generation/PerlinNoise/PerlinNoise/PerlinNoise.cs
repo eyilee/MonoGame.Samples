@@ -4,6 +4,8 @@ namespace MonoGame.Samples.PerlinNoise;
 
 public class PerlinNoise
 {
+    private static readonly float GradientScale = float.Sqrt (2);
+
     private readonly int[] _permutation;
 
     public PerlinNoise ()
@@ -78,14 +80,14 @@ public class PerlinNoise
         1 => -x + y,
         2 => x - y,
         3 => -x - y,
-        4 => x * float.Sqrt (2),
-        5 => -x * float.Sqrt (2),
-        6 => y * float.Sqrt (2),
-        7 => -y * float.Sqrt (2),
+        4 => x * GradientScale,
+        5 => -x * GradientScale,
+        6 => y * GradientScale,
+        7 => -y * GradientScale,
         _ => 0,
     };
 
-    public float FractalBrownianMotionNoise (float x, float y, int octaves)
+    public float FractalBrownianMotionNoise (float x, float y, int octaves, float lacunarity, float persistence)
     {
         if (octaves <= 0)
         {
@@ -103,18 +105,10 @@ public class PerlinNoise
             value += Noise (x * frequency, y * frequency) * amplitude;
             maxValue += amplitude;
 
-            frequency *= 1.6f;
-            amplitude *= 0.625f;
+            frequency *= lacunarity;
+            amplitude *= persistence;
         }
 
         return value / maxValue;
-    }
-
-    public float DomainWarpedNoise (float x, float y, int octaves, float warpFrequency, float warpAmplitude, int warpOctaves)
-    {
-        float warpX = x + FractalBrownianMotionNoise (x * warpFrequency + 13, y * warpFrequency + 19, warpOctaves) * warpAmplitude;
-        float warpY = y + FractalBrownianMotionNoise (x * warpFrequency + 23, y * warpFrequency + 29, warpOctaves) * warpAmplitude;
-
-        return FractalBrownianMotionNoise (warpX, warpY, octaves);
     }
 }
