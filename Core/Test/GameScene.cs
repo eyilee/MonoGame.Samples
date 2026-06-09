@@ -9,7 +9,8 @@ namespace MonoGame.Samples.Test;
 public class GameScene : Scene
 {
     private MaterialInstance _materialInstance = null!;
-    private TextureHandle _textureHandle = null!;
+    private TextureHandle _textureHandle1 = null!;
+    private TextureHandle _textureHandle2 = null!;
 
     public override void Initialize ()
     {
@@ -22,9 +23,13 @@ public class GameScene : Scene
 
     public override void LoadContent ()
     {
-        Texture2D texture = new (GraphicsDevice, 1, 1);
-        texture.SetData ([Color.White]);
-        _textureHandle = new TextureHandle (texture, 0);
+        Texture2D texture1 = new (GraphicsDevice, 1, 1);
+        texture1.SetData ([Color.White]);
+        _textureHandle1 = new TextureHandle (texture1, 0);
+
+        Texture2D texture2 = new (GraphicsDevice, 1, 1);
+        texture2.SetData ([Color.Red]);
+        _textureHandle2 = new TextureHandle (texture2, 1);
 
         base.LoadContent ();
     }
@@ -47,7 +52,14 @@ public class GameScene : Scene
     {
         GraphicsDevice.Clear (Color.CornflowerBlue);
 
-        Render.Enqueue (new RenderCommand (_materialInstance, null, new Rectangle (50, 50, 50, 50), _textureHandle, new Rectangle (), Color.Red, Vector2.Zero));
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                Render.Enqueue (new RenderCommand (_materialInstance, null, new Rectangle (50 + i * 60, 50 + j * 60, 50, 50), _textureHandle1, new Rectangle (), Color.White, Vector2.Zero, depth: 0.01f));
+                Render.Enqueue (new RenderCommand (_materialInstance, null, new Rectangle (80 + i * 60, 80 + j * 60, 50, 50), _textureHandle2, new Rectangle (), Color.White, Vector2.Zero, depth: 0.02f));
+            }
+        }
 
         base.Draw (gameTime);
     }
