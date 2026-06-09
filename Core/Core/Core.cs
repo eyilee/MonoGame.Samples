@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Samples.Library.Graphics;
 using MonoGame.Samples.Library.Input;
 using MonoGameGum;
 using System;
@@ -37,6 +38,8 @@ public class Core : Game
     public static int ScreenHeight => Graphics.PreferredBackBufferHeight;
 
     public static SpriteBatch SpriteBatch { get; private set; } = null!;
+
+    public static RenderManager Render { get; private set; } = null!;
 
     public static InputManager Input { get; private set; } = null!;
 
@@ -75,6 +78,8 @@ public class Core : Game
         GraphicsDevice = base.GraphicsDevice;
 
         SpriteBatch = new SpriteBatch (GraphicsDevice);
+
+        Render = new RenderManager (GraphicsDevice);
 
         Input = new InputManager ();
 
@@ -134,6 +139,8 @@ public class Core : Game
     protected override void Draw (GameTime gameTime)
     {
         s_activeScene?.Draw (gameTime);
+
+        Render.Draw ();
 
         GumUI.Draw ();
 
