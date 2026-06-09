@@ -75,7 +75,6 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
 
         material.ApplyStates (_graphicsDevice);
         material.ApplyProperties (properties);
-        _graphicsDevice.Textures[0] = texture;
 
         int batchIndex = 0;
         int batchCount = _batchCount;
@@ -102,7 +101,7 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
                 _vertices[vertexIndex + 3] = batchItem.BR;
             }
 
-            FlushArray (material, startIndex, startIndex + batchCountToProcess);
+            FlushArray (material, texture, startIndex, startIndex + batchCountToProcess);
 
             batchIndex += batchCountToProcess;
             batchCount -= batchCountToProcess;
@@ -111,7 +110,7 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
         _batchCount = 0;
     }
 
-    private void FlushArray (MaterialInstance material, int startIndex, int endIndex)
+    private void FlushArray (MaterialInstance material, Texture? texture, int startIndex, int endIndex)
     {
         if (startIndex == endIndex)
         {
@@ -123,6 +122,8 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
         foreach (EffectPass pass in material.Effect.CurrentTechnique.Passes)
         {
             pass.Apply ();
+
+            _graphicsDevice.Textures[0] = texture;
 
             _graphicsDevice.DrawUserIndexedPrimitives (PrimitiveType.TriangleList,
                 _vertices,
