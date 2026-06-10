@@ -13,14 +13,15 @@ public class SpriteBatchEncoder : IBatchEncoder<VertexPositionColorTexture>
     {
         Vector3[] vertices = mesh.Vertices;
         Color[] colors = mesh.Colors!;
-        Span<Vector2> uvs = MemoryMarshal.Cast<float, Vector2> (mesh.UVs);
+        Vector4[] uvs = mesh.UVs!;
 
         for (int i = 0; i < VertexCount; i++)
         {
             ref VertexPositionColorTexture vertex = ref batchVertices[index + i];
             vertex.Position = vertices[i];
             vertex.Color = colors[i];
-            vertex.TextureCoordinate = uvs[i];
+            vertex.TextureCoordinate.X = uvs[i].X;
+            vertex.TextureCoordinate.Y = uvs[i].Y;
         }
     }
 }
