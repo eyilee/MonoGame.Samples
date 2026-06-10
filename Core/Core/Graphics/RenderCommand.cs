@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using MonoGame.Samples.Library.Content;
-using System;
+﻿using MonoGame.Samples.Library.Content;
 
 namespace MonoGame.Samples.Library.Graphics;
 
@@ -10,21 +8,11 @@ public struct RenderCommand
 
     public MaterialPropertyBlock? Properties { get; }
 
-    public Rectangle Destination { get; }
+    public Mesh Mesh { get; set; }
 
     public TextureHandle? Texture { get; }
 
-    public Rectangle? Source { get; }
-
-    public Color Color { get; }
-
-    public Vector2 Origin { get; }
-
-    public float Rotation { get; }
-
     public float Depth { get; }
-
-    public ushort Sequence { get; set; }
 
     public readonly ulong SortKey
     {
@@ -32,73 +20,33 @@ public struct RenderCommand
         {
             ushort depthBits = (ushort)(float.Clamp (Depth, 0f, 1f) * ushort.MaxValue);
 
-            return ((ulong)Material.Id << 48)
-                | ((ulong)(Texture?.Id ?? 0) << 32)
-                | ((ulong)depthBits << 16)
-                | Sequence;
+            return ((ulong)Material.Id << 32)
+                | ((ulong)(Texture?.Id ?? 0) << 16)
+                | depthBits;
         }
     }
 
-    public RenderCommand (MaterialInstance material,
-        MaterialPropertyBlock? properties,
-        Rectangle destination,
-        TextureHandle texture,
-        Rectangle source,
-        Color color,
-        Vector2? origin,
-        float rotation = 0f,
-        float depth = 0f,
-        ushort sequence = 0)
+    public RenderCommand (MaterialInstance material, MaterialPropertyBlock? properties, Mesh mesh, TextureHandle? texture, float depth = 0f)
     {
         Material = material;
         Properties = properties;
-        Destination = destination;
+        Mesh = mesh;
         Texture = texture;
-        Source = source;
-        Color = color;
-        Origin = origin ?? Vector2.Zero;
-        Rotation = rotation;
         Depth = depth;
-        Sequence = sequence;
     }
 
-    public RenderCommand (MaterialInstance material,
-        Rectangle destination,
-        TextureHandle texture,
-        Rectangle source,
-        Color color,
-        Vector2? origin,
-        float rotation = 0f,
-        float depth = 0f,
-        ushort sequence = 0)
+    public RenderCommand (MaterialInstance material, Mesh mesh, TextureHandle? texture, float depth = 0f)
     {
         Material = material;
-        Destination = destination;
+        Mesh = mesh;
         Texture = texture;
-        Source = source;
-        Color = color;
-        Origin = origin ?? Vector2.Zero;
-        Rotation = rotation;
         Depth = depth;
-        Sequence = sequence;
     }
 
-    public RenderCommand (MaterialInstance material,
-        MaterialPropertyBlock? properties,
-        Rectangle destination,
-        Color color,
-        Vector2? origin,
-        float rotation = 0f,
-        float depth = 0f,
-        ushort sequence = 0)
+    public RenderCommand (MaterialInstance material, Mesh mesh, float depth = 0f)
     {
         Material = material;
-        Properties = properties;
-        Destination = destination;
-        Color = color;
-        Origin = origin ?? Vector2.Zero;
-        Rotation = rotation;
+        Mesh = mesh;
         Depth = depth;
-        Sequence = sequence;
     }
 }

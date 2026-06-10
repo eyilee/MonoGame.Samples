@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Samples.Library;
 using MonoGame.Samples.Library.Content;
 using MonoGame.Samples.Library.Graphics;
+using System.Collections.Generic;
 
 namespace MonoGame.Samples.Test;
 
@@ -11,12 +12,23 @@ public class GameScene : Scene
     private MaterialInstance _materialInstance = null!;
     private TextureHandle _textureHandle1 = null!;
     private TextureHandle _textureHandle2 = null!;
+    private List<Mesh> _mesh1es = [];
+    private List<Mesh> _mesh2es = [];
 
     public override void Initialize ()
     {
         SpriteEffect spriteEffect = new (GraphicsDevice);
         Material spriteMaterial = MaterialManager.CreateMaterial ("Sprite", spriteEffect);
         _materialInstance = spriteMaterial.CreateInstance ();
+
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                _mesh1es.Add (CreateMesh (new Rectangle (50 + i * 60, 50 + j * 60, 50, 50), Color.White, 0.01f));
+                _mesh2es.Add (CreateMesh (new Rectangle (80 + i * 60, 80 + j * 60, 50, 50), Color.White, 0.02f));
+            }
+        }
 
         base.Initialize ();
     }
@@ -52,15 +64,44 @@ public class GameScene : Scene
     {
         GraphicsDevice.Clear (Color.CornflowerBlue);
 
-        for (int i = 0; i < 5; i++)
+        foreach (Mesh mesh in _mesh1es)
         {
-            for (int j = 0; j < 5; j++)
-            {
-                Render.Enqueue (new RenderCommand (_materialInstance, null, new Rectangle (50 + i * 60, 50 + j * 60, 50, 50), _textureHandle1, new Rectangle (), Color.White, Vector2.Zero, depth: 0.01f));
-                Render.Enqueue (new RenderCommand (_materialInstance, null, new Rectangle (80 + i * 60, 80 + j * 60, 50, 50), _textureHandle2, new Rectangle (), Color.White, Vector2.Zero, depth: 0.02f));
-            }
+            Render.Enqueue (new RenderCommand (_materialInstance, null, mesh, _textureHandle1, 0.01f));
+        }
+
+        foreach (Mesh mesh in _mesh2es)
+        {
+            Render.Enqueue (new RenderCommand (_materialInstance, null, mesh, _textureHandle2, 0.01f));
         }
 
         base.Draw (gameTime);
+    }
+
+    private static Mesh CreateMesh (Rectangle destination, Color color, float depth = 0f)
+    {
+        Mesh mesh = new ();
+
+        float x = destination.X;
+        float y = destination.Y;
+        float w = destination.Width;
+        float h = destination.Height;
+
+        mesh.SetVertices ([
+            new Vector3 (x, y, depth),
+            new Vector3 (x + w, y, depth),
+            new Vector3 (x, y + h, depth),
+            new Vector3 (x + w, y + h, depth)
+            ]);
+
+        mesh.SetColors ([color, color, color, color]);
+
+        mesh.SetUVs ([
+            new Vector2 (0f, 0f),
+            new Vector2 (1f, 0f),
+            new Vector2 (0f, 1f),
+            new Vector2 (1f, 1f)
+            ]);
+
+        return mesh;
     }
 }

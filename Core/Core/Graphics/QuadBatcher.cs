@@ -5,24 +5,28 @@ namespace MonoGame.Samples.Library.Graphics;
 
 internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : struct, IVertexType
 {
-    public static Type VertexType => typeof (TVertexType);
-
+    private const int IndexCount = 6;
     private const int InitBatchSize = 256;
-    private const int MaxBatchSize = short.MaxValue / 6;
+    private const int MaxBatchSize = short.MaxValue / IndexCount;
+
+    private readonly IBatchEncoder<TVertexType> _batchEncoder;
+    private int VertexCount => _batchEncoder.VertexCount;
 
     private int _batchCount;
-    private QuadBatchItem<TVertexType>[] _batchItems;
+    private TVertexType[] _batchVertices;
 
-    private short[] _indexes;
+    private short[] _indices;
     private TVertexType[] _vertices;
 
-    public QuadBatcher (GraphicsDevice graphicsDevice)
+    public QuadBatcher (GraphicsDevice graphicsDevice, IBatchEncoder<TVertexType> batchEncoder)
         : base (graphicsDevice)
     {
-        _batchCount = 0;
-        _batchItems = new QuadBatchItem<TVertexType>[InitBatchSize];
+        _batchEncoder = batchEncoder;
 
-        _indexes = [];
+        _batchCount = 0;
+        _batchVertices = new TVertexType[InitBatchSize * _batchEncoder.VertexCount];
+
+        _indices = [];
         _vertices = [];
 
         EnsureArrayCapacity (InitBatchSize);
@@ -30,40 +34,43 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
 
     private void EnsureArrayCapacity (int batchCount)
     {
-        if (_indexes.Length >= batchCount * 6)
+        if (_indices.Length >= batchCount * IndexCount)
         {
             return;
         }
 
-        short[] newIndexes = new short[batchCount * 6];
-        _indexes.CopyTo (newIndexes, 0);
+        short[] newIndices = new short[batchCount * IndexCount];
+        _indices.CopyTo (newIndices, 0);
 
-        for (int i = _indexes.Length / 6; i < newIndexes.Length / 6; i++)
+        for (int i = _indices.Length / IndexCount; i < newIndices.Length / IndexCount; i++)
         {
-            int indexIndex = i * 6;
-            int vertexIndex = i * 4;
-            newIndexes[indexIndex + 0] = (short)(vertexIndex + 0);
-            newIndexes[indexIndex + 1] = (short)(vertexIndex + 1);
-            newIndexes[indexIndex + 2] = (short)(vertexIndex + 2);
-            newIndexes[indexIndex + 3] = (short)(vertexIndex + 1);
-            newIndexes[indexIndex + 4] = (short)(vertexIndex + 3);
-            newIndexes[indexIndex + 5] = (short)(vertexIndex + 2);
+            int indexIndex = i * IndexCount;
+            int vertexIndex = i * VertexCount;
+            newIndices[indexIndex + 0] = (short)(vertexIndex + 0);
+            newIndices[indexIndex + 1] = (short)(vertexIndex + 1);
+            newIndices[indexIndex + 2] = (short)(vertexIndex + 2);
+            newIndices[indexIndex + 3] = (short)(vertexIndex + 1);
+            newIndices[indexIndex + 4] = (short)(vertexIndex + 3);
+            newIndices[indexIndex + 5] = (short)(vertexIndex + 2);
         }
 
-        _indexes = newIndexes;
-        _vertices = new TVertexType[batchCount * 4];
+        _indices = newIndices;
+        _vertices = new TVertexType[batchCount * VertexCount];
     }
 
-    public ref QuadBatchItem<TVertexType> CreateBatchItem ()
+    public void Batch (Mesh mesh)
     {
-        if (_batchCount >= _batchItems.Length)
+        int index = _batchCount * _batchEncoder.VertexCount;
+        if (index >= _batchVertices.Length)
         {
-            Array.Resize (ref _batchItems, _batchItems.Length * 2);
+            Array.Resize (ref _batchVertices, _batchVertices.Length * 2);
 
-            EnsureArrayCapacity (int.Min (_batchItems.Length, MaxBatchSize));
+            EnsureArrayCapacity (int.Min (_batchVertices.Length / _batchEncoder.VertexCount, MaxBatchSize));
         }
 
-        return ref _batchItems[_batchCount++];
+        _batchEncoder.Encode (_batchVertices, index, mesh);
+
+        _batchCount++;
     }
 
     public override void DrawBatch (MaterialInstance material, MaterialPropertyBlock? properties, Texture? texture)
@@ -81,27 +88,15 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
 
         while (batchCount > 0)
         {
-            int startIndex = batchIndex;
-
             int batchCountToProcess = batchCount;
             if (batchCountToProcess > MaxBatchSize)
             {
                 batchCountToProcess = MaxBatchSize;
             }
 
-            for (int i = 0; i < batchCountToProcess; i++)
-            {
-                int batchItemIndex = startIndex + i;
-                QuadBatchItem<TVertexType> batchItem = _batchItems[batchItemIndex];
+            Array.Copy (_batchVertices, batchIndex * _batchEncoder.VertexCount, _vertices, 0, batchCountToProcess * _batchEncoder.VertexCount);
 
-                int vertexIndex = i * 4;
-                _vertices[vertexIndex + 0] = batchItem.TL;
-                _vertices[vertexIndex + 1] = batchItem.TR;
-                _vertices[vertexIndex + 2] = batchItem.BL;
-                _vertices[vertexIndex + 3] = batchItem.BR;
-            }
-
-            FlushArray (material, texture, startIndex, startIndex + batchCountToProcess);
+            FlushArray (material, texture, batchCountToProcess);
 
             batchIndex += batchCountToProcess;
             batchCount -= batchCountToProcess;
@@ -110,14 +105,12 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
         _batchCount = 0;
     }
 
-    private void FlushArray (MaterialInstance material, Texture? texture, int startIndex, int endIndex)
+    private void FlushArray (MaterialInstance material, Texture? texture, int batchCount)
     {
-        if (startIndex == endIndex)
+        if (batchCount <= 0)
         {
             return;
         }
-
-        int batchItemCount = endIndex - startIndex;
 
         foreach (EffectPass pass in material.Effect.CurrentTechnique.Passes)
         {
@@ -128,10 +121,10 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
             _graphicsDevice.DrawUserIndexedPrimitives (PrimitiveType.TriangleList,
                 _vertices,
                 0,
-                batchItemCount * 4,
-                _indexes,
+                batchCount * VertexCount,
+                _indices,
                 0,
-                batchItemCount * 2);
+                batchCount * 2);
         }
     }
 }
