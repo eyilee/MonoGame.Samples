@@ -12,8 +12,7 @@ public class GameScene : Scene
     private MaterialInstance _materialInstance = null!;
     private TextureHandle _textureHandle1 = null!;
     private TextureHandle _textureHandle2 = null!;
-    private List<Mesh> _mesh1es = [];
-    private List<Mesh> _mesh2es = [];
+    private List<Mesh> _meshes = [];
 
     public override void Initialize ()
     {
@@ -21,12 +20,11 @@ public class GameScene : Scene
         Material spriteMaterial = new ("Sprite", spriteEffect);
         _materialInstance = spriteMaterial.CreateInstance ();
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 512; i++)
         {
-            for (int j = 0; j < 5; j++)
+            for (int j = 0; j < 512; j++)
             {
-                _mesh1es.Add (CreateMesh (new Rectangle (50 + i * 60, 50 + j * 60, 50, 50), Color.White, 0.01f));
-                _mesh2es.Add (CreateMesh (new Rectangle (80 + i * 60, 80 + j * 60, 50, 50), Color.White, 0.02f));
+                _meshes.Add (CreateMesh (new Rectangle (i, j, 1, 1), ColorUtility.HSVToRGB (i / 512f, j / 512f, 1f)));
             }
         }
 
@@ -64,14 +62,9 @@ public class GameScene : Scene
     {
         GraphicsDevice.Clear (Color.CornflowerBlue);
 
-        foreach (Mesh mesh in _mesh1es)
+        for (int i = 0; i < _meshes.Count; i++)
         {
-            Render.Enqueue (new RenderCommand (_materialInstance, null, mesh, _textureHandle1, 0.01f));
-        }
-
-        foreach (Mesh mesh in _mesh2es)
-        {
-            Render.Enqueue (new RenderCommand (_materialInstance, null, mesh, _textureHandle2, 0.01f));
+            Render.Enqueue (new RenderCommand (_materialInstance, null, _meshes[i], (i % 2 == 0) ? _textureHandle1 : _textureHandle2));
         }
 
         base.Draw (gameTime);

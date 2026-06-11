@@ -7,11 +7,11 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
 {
     private const int IndexCount = 6;
     private const int VertexCount = 4;
-    private const int InitBatchSize = 256;
-    private const int MaxBatchSize = 1024;
+
+    public static VertexDeclaration VertexDeclaration => VertexDeclarationCache<TVertexType>.VertexDeclaration;
 
     private readonly IBatchEncoder<TVertexType> _batchEncoder;
-    private readonly VertexDeclaration _vertexDeclaration;
+    private readonly int _batchSize;
 
     private int _batchCount;
     private TVertexType[] _batchVertices;
@@ -19,16 +19,18 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
     private readonly IndexBuffer _indexBuffer;
     private readonly DynamicVertexBuffer _vertexBuffer;
 
-    public QuadBatcher (GraphicsDevice graphicsDevice, IBatchEncoder<TVertexType> batchEncoder)
+    public QuadBatcher (GraphicsDevice graphicsDevice, IBatchEncoder<TVertexType> batchEncoder, int batchSize = ushort.MaxValue / IndexCount)
         : base (graphicsDevice)
     {
+        ArgumentOutOfRangeException.ThrowIfGreaterThan (batchSize, ushort.MaxValue / IndexCount);
+
         _batchEncoder = batchEncoder;
-        _vertexDeclaration = VertexDeclarationCache<TVertexType>.VertexDeclaration;
+        _batchSize = batchSize;
 
         _batchCount = 0;
-        _batchVertices = new TVertexType[InitBatchSize * VertexCount];
+        _batchVertices = new TVertexType[32 * VertexCount];
 
-        short[] indices = new short[MaxBatchSize * IndexCount];
+        short[] indices = new short[_batchSize * IndexCount];
 
         for (int i = 0; i < indices.Length / IndexCount; i++)
         {
@@ -42,10 +44,10 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
             indices[indexIndex + 5] = (short)(vertexIndex + 2);
         }
 
-        _indexBuffer = new IndexBuffer (graphicsDevice, IndexElementSize.SixteenBits, MaxBatchSize * IndexCount, BufferUsage.WriteOnly);
+        _indexBuffer = new IndexBuffer (graphicsDevice, IndexElementSize.SixteenBits, _batchSize * IndexCount, BufferUsage.WriteOnly);
         _indexBuffer.SetData (indices);
 
-        _vertexBuffer = new DynamicVertexBuffer (graphicsDevice, _vertexDeclaration, MaxBatchSize * VertexCount, BufferUsage.WriteOnly);
+        _vertexBuffer = new DynamicVertexBuffer (graphicsDevice, VertexDeclaration, _batchSize * VertexCount, BufferUsage.WriteOnly);
     }
 
     public void Batch (Mesh mesh)
@@ -77,9 +79,9 @@ internal class QuadBatcher<TVertexType> : RenderBatcher where TVertexType : stru
         while (batchCount > 0)
         {
             int batchCountToProcess = batchCount;
-            if (batchCountToProcess > MaxBatchSize)
+            if (batchCountToProcess > _batchSize)
             {
-                batchCountToProcess = MaxBatchSize;
+                batchCountToProcess = _batchSize;
             }
 
             FlushArray (material, texture, batchIndex * VertexCount, batchCountToProcess);
