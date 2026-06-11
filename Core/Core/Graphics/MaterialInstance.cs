@@ -9,6 +9,8 @@ namespace MonoGame.Samples.Library.Graphics
 
         public ushort Id => Material.Id;
 
+        public string Name => Material.Name;
+
         public Effect Effect => Material.Effect;
 
         public BlendState BlendState => Material.BlendState;

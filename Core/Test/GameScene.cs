@@ -18,7 +18,7 @@ public class GameScene : Scene
     public override void Initialize ()
     {
         SpriteEffect spriteEffect = new (GraphicsDevice);
-        Material spriteMaterial = MaterialManager.CreateMaterial ("Sprite", spriteEffect);
+        Material spriteMaterial = new ("Sprite", spriteEffect);
         _materialInstance = spriteMaterial.CreateInstance ();
 
         for (int i = 0; i < 5; i++)

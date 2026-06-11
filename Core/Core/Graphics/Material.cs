@@ -1,11 +1,16 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 
 namespace MonoGame.Samples.Library.Graphics
 {
-    public class Material
+    public class Material : IDisposable
     {
+        private bool _disposed;
+
         public ushort Id { get; }
+
+        public string Name { get; }
 
         public Effect Effect { get; }
 
@@ -21,14 +26,15 @@ namespace MonoGame.Samples.Library.Graphics
 
         private readonly Dictionary<int, EffectParameter?> _parameters = [];
 
-        internal Material (ushort id, Effect effect,
+        public Material (string name, Effect effect,
             BlendState? blendState = null,
             int samplerSlot = 0,
             SamplerState? samplerState = null,
             DepthStencilState? depthStencilState = null,
             RasterizerState? rasterizerState = null)
         {
-            Id = id;
+            Id = MaterialRegistry.Regist (name, this);
+            Name = name;
             Effect = effect;
             BlendState = blendState ?? BlendState.AlphaBlend;
             SamplerSlot = samplerSlot;
@@ -40,6 +46,11 @@ namespace MonoGame.Samples.Library.Graphics
             {
                 _parameters[MaterialPropertyIds.GetId (parameter.Name)] = parameter;
             }
+        }
+
+        ~Material ()
+        {
+            Dispose (false);
         }
 
         public EffectParameter? GetParameter (int propertyId)
@@ -56,5 +67,24 @@ namespace MonoGame.Samples.Library.Graphics
         }
 
         public MaterialInstance CreateInstance () => new (this);
+
+        protected virtual void Dispose (bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    MaterialRegistry.UnRegist (this);
+                }
+
+                _disposed = true;
+            }
+        }
+
+        public void Dispose ()
+        {
+            Dispose (true);
+            GC.SuppressFinalize (this);
+        }
     }
 }
