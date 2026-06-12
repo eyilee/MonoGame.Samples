@@ -10,9 +10,13 @@ internal class ShaderResource (string name)
 
     public static readonly ShaderResource SdfLine = new (SdfLineName);
 
+    public static readonly ShaderResource SdfParabola = new (SdfParabolaName);
+
     public const string SdfCircleName = "MonoGame.Samples.Library.Shaders.Sdf.SdfCircle.mgfxo";
 
     public const string SdfLineName = "MonoGame.Samples.Library.Shaders.Sdf.SdfLine.mgfxo";
+
+    public const string SdfParabolaName = "MonoGame.Samples.Library.Shaders.Sdf.SdfParabola.mgfxo";
 
     private readonly object _locker = new ();
 

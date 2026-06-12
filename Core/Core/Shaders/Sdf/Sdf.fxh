@@ -21,7 +21,7 @@ struct VSInput
 struct PSInput
 {
     float4 Position : SV_POSITION;
-    float2 LocalPos : TEXCOORD0;
+    float2 LocalPos : POSITION0;
     float4 Rotation_Scale_Thickness : TEXCOORD1;
     float4 ShapeData0 : TEXCOORD2;
     float4 ShapeData1 : TEXCOORD3;
