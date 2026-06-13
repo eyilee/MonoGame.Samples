@@ -10,10 +10,12 @@ public class RenderManager
     private int _commandCount = 0;
 
     private readonly QuadBatcher<VertexPositionColorTexture> _batcher;
+    private readonly QuadInstanceBatcher<VertexSdfInstance> _sdfInstanceBatcher;
 
     public RenderManager (GraphicsDevice graphicsDevice)
     {
         _batcher = new QuadBatcher<VertexPositionColorTexture> (graphicsDevice, new SpriteBatchEncoder ());
+        _sdfInstanceBatcher = new QuadInstanceBatcher<VertexSdfInstance> (graphicsDevice, new SdfInstanceBatchEncoder ());
     }
 
     public void Enqueue (RenderCommand command)
@@ -56,6 +58,8 @@ public class RenderManager
         {
             ref SortingIndex firstSortingIndex = ref _sortingIndices[batchStartIndex];
             ref RenderCommand firstCommand = ref _commands[firstSortingIndex.Index];
+
+            // TODO: select batcher by command
 
             int batchEndIndex = FindBatchEnd (batchStartIndex, firstCommand);
             for (int i = batchStartIndex; i < batchEndIndex; i++)

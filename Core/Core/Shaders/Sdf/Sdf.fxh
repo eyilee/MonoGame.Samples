@@ -10,7 +10,7 @@ matrix WorldViewProjection;
 
 struct VSInput
 {
-    float2 LocalPos : POSITION0;
+    float3 LocalPos : POSITION0;
     float2 WorldPos : TEXCOORD0;
     float4 Rotation_Scale_Thickness : TEXCOORD1;
     float4 ShapeData0 : TEXCOORD2;
@@ -21,7 +21,7 @@ struct VSInput
 struct PSInput
 {
     float4 Position : SV_POSITION;
-    float2 LocalPos : POSITION0;
+    float2 LocalPos : TEXCOORD0;
     float4 Rotation_Scale_Thickness : TEXCOORD1;
     float4 ShapeData0 : TEXCOORD2;
     float4 ShapeData1 : TEXCOORD3;
@@ -43,7 +43,7 @@ PSInput MainVS (VSInput input)
 
     float rotation = input.Rotation_Scale_Thickness.x;
     float2 scale = input.Rotation_Scale_Thickness.yz;
-    float2 localPos = input.LocalPos * scale;
+    float2 localPos = input.LocalPos.xy * scale;
     float2 worldPos = rotate2D (localPos, rotation) + input.WorldPos;
 
     o.Position = mul (float4 (worldPos, 0.0, 1.0), WorldViewProjection);

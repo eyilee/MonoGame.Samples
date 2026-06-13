@@ -10,16 +10,27 @@ public class SpriteBatchEncoder : IBatchEncoder<VertexPositionColorTexture>
     public void Encode (VertexPositionColorTexture[] batchVertices, int index, Mesh mesh)
     {
         Vector3[] vertices = mesh.Vertices;
-        Color[] colors = mesh.Colors!;
-        Vector4[] uvs = mesh.UVs!;
+        Color[]? colors = mesh.Colors;
+        Vector4[]? uvs = mesh.UVs;
+
+        bool hasColors = colors != null;
+        bool hasUVs = uvs != null;
 
         for (int i = 0; i < VertexCount; i++)
         {
             ref VertexPositionColorTexture vertex = ref batchVertices[index + i];
             vertex.Position = vertices[i];
-            vertex.Color = colors[i];
-            vertex.TextureCoordinate.X = uvs[i].X;
-            vertex.TextureCoordinate.Y = uvs[i].Y;
+
+            if (hasColors)
+            {
+                vertex.Color = colors![i];
+            }
+
+            if (hasUVs)
+            {
+                vertex.TextureCoordinate.X = uvs![i].X;
+                vertex.TextureCoordinate.Y = uvs![i].Y;
+            }
         }
     }
 }

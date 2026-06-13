@@ -75,6 +75,8 @@ internal static class MaterialRegistry
             }
         }
 
+        _accquiredIds[_nextId] = true;
+
         return _nextId;
     }
 

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Samples.Library;
 using MonoGame.Samples.Library.Content;
 using MonoGame.Samples.Library.Graphics;
+using MonoGame.Samples.Library.Shaders;
 using System.Collections.Generic;
 
 namespace MonoGame.Samples.Test;
@@ -10,6 +11,7 @@ namespace MonoGame.Samples.Test;
 public class GameScene : Scene
 {
     private MaterialInstance _materialInstance = null!;
+    private MaterialInstance _sdfCircleMaterial = null!;
     private TextureHandle _textureHandle1 = null!;
     private TextureHandle _textureHandle2 = null!;
     private List<Mesh> _meshes = [];
@@ -20,6 +22,12 @@ public class GameScene : Scene
         Material spriteMaterial = new ("Sprite", spriteEffect);
         _materialInstance = spriteMaterial.CreateInstance ();
 
+        SdfCircleEffect sdfCircleEffect = new (GraphicsDevice);
+        Material sdfCircleMaterial = new ("SdfCircle", sdfCircleEffect, rasterizerState: RasterizerState.CullNone);
+        _sdfCircleMaterial = sdfCircleMaterial.CreateInstance ();
+        _sdfCircleMaterial.PropertyBlock.SetMatrix ("WorldViewProjection", Camera.Main.GetViewProjectionMatrix ());
+
+
         for (int i = 0; i < 512; i++)
         {
             for (int j = 0; j < 512; j++)
@@ -27,6 +35,8 @@ public class GameScene : Scene
                 _meshes.Add (CreateMesh (new Rectangle (i, j, 1, 1), ColorUtility.HSVToRGB (i / 512f, j / 512f, 1f)));
             }
         }
+
+        //_meshes.Add (CreateSdfCircleMesh (new Vector2 (100f, 100f), 50f, Color.Red, 5f));
 
         base.Initialize ();
     }
@@ -94,6 +104,18 @@ public class GameScene : Scene
             new Vector2 (0f, 1f),
             new Vector2 (1f, 1f)
             ]);
+
+        return mesh;
+    }
+
+    private static Mesh CreateSdfCircleMesh (Vector2 center, float radius, Color color, float thickness = 1f)
+    {
+        Mesh mesh = new ();
+
+        mesh.SetUVs ([center]);
+        mesh.SetUV1s ([new Vector4 (0f, (radius + thickness) * 2, (radius + thickness) * 2, thickness)]);
+        mesh.SetUV2s ([new Vector4 (radius, 0f, 0f, 0f)]);
+        mesh.SetColors ([color]);
 
         return mesh;
     }
