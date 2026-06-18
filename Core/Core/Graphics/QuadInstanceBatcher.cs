@@ -21,8 +21,8 @@ internal class QuadInstanceBatcher<TVertexType> : RenderBatcher where TVertexTyp
     private readonly VertexBuffer _vertexBuffer;
     private readonly DynamicVertexBuffer _instanceBuffer;
 
-    public QuadInstanceBatcher (GraphicsDevice graphicsDevice, IBatchEncoder<TVertexType> batchEncoder, int batchSize = ushort.MaxValue / IndexCount)
-        : base (graphicsDevice)
+    public QuadInstanceBatcher (GraphicsDevice graphicsDevice, string name, IBatchEncoder<TVertexType> batchEncoder, int batchSize = ushort.MaxValue / IndexCount)
+        : base (graphicsDevice, name)
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan (batchSize, ushort.MaxValue / IndexCount);
 
@@ -46,7 +46,7 @@ internal class QuadInstanceBatcher<TVertexType> : RenderBatcher where TVertexTyp
         _instanceBuffer = new DynamicVertexBuffer (graphicsDevice, VertexDeclaration, _batchSize, BufferUsage.WriteOnly);
     }
 
-    public void Batch (Mesh mesh)
+    public override void Batch (Mesh mesh)
     {
         int index = _batchCount;
         if (index >= _batchVertices.Length)

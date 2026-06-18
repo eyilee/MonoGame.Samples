@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MonoGame.Samples.Library.Graphics;
 
-public class Material : IDisposable
+public class Material : INamedResource, IDisposable
 {
     private bool _disposed;
 
@@ -24,6 +24,8 @@ public class Material : IDisposable
 
     public RasterizerState RasterizerState { get; }
 
+    public ushort BatcherId { get; }
+
     private readonly Dictionary<int, EffectParameter?> _parameters = [];
 
     public Material (string name, Effect effect,
@@ -31,7 +33,8 @@ public class Material : IDisposable
         int samplerSlot = 0,
         SamplerState? samplerState = null,
         DepthStencilState? depthStencilState = null,
-        RasterizerState? rasterizerState = null)
+        RasterizerState? rasterizerState = null,
+        ushort batcherId = 0)
     {
         Id = MaterialRegistry.Regist (name, this);
         Name = name;
@@ -41,6 +44,31 @@ public class Material : IDisposable
         SamplerState = samplerState ?? SamplerState.LinearClamp;
         DepthStencilState = depthStencilState ?? DepthStencilState.None;
         RasterizerState = rasterizerState ?? RasterizerState.CullCounterClockwise;
+        BatcherId = batcherId;
+
+        foreach (EffectParameter? parameter in Effect.Parameters)
+        {
+            _parameters[MaterialPropertyIds.GetId (parameter.Name)] = parameter;
+        }
+    }
+
+    public Material (string name, Effect effect,
+        BlendState? blendState = null,
+        int samplerSlot = 0,
+        SamplerState? samplerState = null,
+        DepthStencilState? depthStencilState = null,
+        RasterizerState? rasterizerState = null,
+        string? batcherName = null)
+    {
+        Id = MaterialRegistry.Regist (name, this);
+        Name = name;
+        Effect = effect;
+        BlendState = blendState ?? BlendState.AlphaBlend;
+        SamplerSlot = samplerSlot;
+        SamplerState = samplerState ?? SamplerState.LinearClamp;
+        DepthStencilState = depthStencilState ?? DepthStencilState.None;
+        RasterizerState = rasterizerState ?? RasterizerState.CullCounterClockwise;
+        BatcherId = RenderBatcherRegistry.GetId (batcherName ?? string.Empty);
 
         foreach (EffectParameter? parameter in Effect.Parameters)
         {

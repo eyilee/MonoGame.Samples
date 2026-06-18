@@ -23,6 +23,8 @@ public class MaterialInstance (Material material)
 
     public RasterizerState RasterizerState => Material.RasterizerState;
 
+    public ushort BatcherId => Material.BatcherId;
+
     public EffectParameter? GetParameter (int propertyId) => Material.GetParameter (propertyId);
 
     public MaterialPropertyBlock PropertyBlock { get; } = new ();

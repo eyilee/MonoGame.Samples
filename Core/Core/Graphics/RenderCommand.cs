@@ -6,6 +6,8 @@ public struct RenderCommand
 {
     public MaterialInstance Material { get; }
 
+    public readonly ushort BatcherId => Material.BatcherId;
+
     public MaterialPropertyBlock? Properties { get; }
 
     public Mesh Mesh { get; set; }

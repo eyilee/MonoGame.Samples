@@ -2,8 +2,7 @@
 
 namespace MonoGame.Samples.Library.Graphics;
 
-public interface IBatchEncoder<TVertexType>
-    where TVertexType : struct, IVertexType
+public interface IBatchEncoder<TVertexType> where TVertexType : struct, IVertexType
 {
     public abstract int VertexCount { get; }
 

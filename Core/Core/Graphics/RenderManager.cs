@@ -9,13 +9,10 @@ public class RenderManager
     private SortingIndex[] _sortingIndices = new SortingIndex[32];
     private int _commandCount = 0;
 
-    private readonly QuadBatcher<VertexPositionColorTexture> _batcher;
-    private readonly QuadInstanceBatcher<VertexSdfInstance> _sdfInstanceBatcher;
-
     public RenderManager (GraphicsDevice graphicsDevice)
     {
-        _batcher = new QuadBatcher<VertexPositionColorTexture> (graphicsDevice, new SpriteBatchEncoder ());
-        _sdfInstanceBatcher = new QuadInstanceBatcher<VertexSdfInstance> (graphicsDevice, new SdfInstanceBatchEncoder ());
+        _ = new QuadBatcher<VertexPositionColorTexture> (graphicsDevice, "Sprite", new SpriteBatchEncoder ());
+        _ = new QuadBatcher<VertexSdfInstance> (graphicsDevice, "SdfInstance", new SdfInstanceBatchEncoder ());
     }
 
     public void Enqueue (RenderCommand command)
@@ -59,16 +56,16 @@ public class RenderManager
             ref SortingIndex firstSortingIndex = ref _sortingIndices[batchStartIndex];
             ref RenderCommand firstCommand = ref _commands[firstSortingIndex.Index];
 
-            // TODO: select batcher by command
+            RenderBatcherRegistry.TryGetValue (firstCommand.BatcherId, out RenderBatcher? batcher);
 
             int batchEndIndex = FindBatchEnd (batchStartIndex, firstCommand);
             for (int i = batchStartIndex; i < batchEndIndex; i++)
             {
                 ref RenderCommand command = ref _commands[_sortingIndices[i].Index];
-                _batcher.Batch (command.Mesh);
+                batcher?.Batch (command.Mesh);
             }
 
-            _batcher.DrawBatch (firstCommand.Material, firstCommand.Properties, firstCommand.Texture?.Texture);
+            batcher?.DrawBatch (firstCommand.Material, firstCommand.Properties, firstCommand.Texture?.Texture);
 
             batchStartIndex = batchEndIndex;
         }
@@ -96,6 +93,7 @@ public class RenderManager
     {
         return ReferenceEquals (nextCommand.Material, firstCommand.Material) &&
             ReferenceEquals (nextCommand.Properties, firstCommand.Properties) &&
-            ReferenceEquals (nextCommand.Texture, firstCommand.Texture);
+            ReferenceEquals (nextCommand.Texture, firstCommand.Texture) &&
+            nextCommand.BatcherId == firstCommand.BatcherId;
     }
 }

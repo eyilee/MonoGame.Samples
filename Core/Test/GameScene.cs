@@ -15,15 +15,16 @@ public class GameScene : Scene
     private TextureHandle _textureHandle1 = null!;
     private TextureHandle _textureHandle2 = null!;
     private List<Mesh> _meshes = [];
+    private List<Mesh> _sdfMeshes = [];
 
     public override void Initialize ()
     {
         SpriteEffect spriteEffect = new (GraphicsDevice);
-        Material spriteMaterial = new ("Sprite", spriteEffect);
+        Material spriteMaterial = new ("Sprite", spriteEffect, batcherName: "Sprite");
         _materialInstance = spriteMaterial.CreateInstance ();
 
         SdfCircleEffect sdfCircleEffect = new (GraphicsDevice);
-        Material sdfCircleMaterial = new ("SdfCircle", sdfCircleEffect, rasterizerState: RasterizerState.CullNone);
+        Material sdfCircleMaterial = new ("SdfCircle", sdfCircleEffect, rasterizerState: RasterizerState.CullNone, batcherName: "SdfInstance");
         _sdfCircleMaterial = sdfCircleMaterial.CreateInstance ();
         _sdfCircleMaterial.PropertyBlock.SetMatrix ("WorldViewProjection", Camera.Main.GetViewProjectionMatrix ());
 
@@ -36,7 +37,7 @@ public class GameScene : Scene
             }
         }
 
-        //_meshes.Add (CreateSdfCircleMesh (new Vector2 (100f, 100f), 50f, Color.Red, 5f));
+        _sdfMeshes.Add (CreateSdfCircleMesh (new Vector2 (100f, 100f), 50f, Color.Red, 5f));
 
         base.Initialize ();
     }
@@ -72,9 +73,14 @@ public class GameScene : Scene
     {
         GraphicsDevice.Clear (Color.CornflowerBlue);
 
-        for (int i = 0; i < _meshes.Count; i++)
+        //for (int i = 0; i < _meshes.Count; i++)
+        //{
+        //    Render.Enqueue (new RenderCommand (_materialInstance, null, _meshes[i], (i % 2 == 0) ? _textureHandle1 : _textureHandle2));
+        //}
+
+        for (int i = 0; i < _sdfMeshes.Count; i++)
         {
-            Render.Enqueue (new RenderCommand (_materialInstance, null, _meshes[i], (i % 2 == 0) ? _textureHandle1 : _textureHandle2));
+            Render.Enqueue (new RenderCommand (_sdfCircleMaterial, _sdfMeshes[i]));
         }
 
         base.Draw (gameTime);
