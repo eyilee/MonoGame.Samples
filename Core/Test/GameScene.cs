@@ -73,10 +73,10 @@ public class GameScene : Scene
     {
         GraphicsDevice.Clear (Color.CornflowerBlue);
 
-        //for (int i = 0; i < _meshes.Count; i++)
-        //{
-        //    Render.Enqueue (new RenderCommand (_materialInstance, null, _meshes[i], (i % 2 == 0) ? _textureHandle1 : _textureHandle2));
-        //}
+        for (int i = 0; i < _meshes.Count; i++)
+        {
+            Render.Enqueue (new RenderCommand (_materialInstance, null, _meshes[i], (i % 2 == 0) ? _textureHandle1 : _textureHandle2));
+        }
 
         for (int i = 0; i < _sdfMeshes.Count; i++)
         {

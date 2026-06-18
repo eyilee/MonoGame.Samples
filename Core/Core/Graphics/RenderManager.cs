@@ -12,7 +12,7 @@ public class RenderManager
     public RenderManager (GraphicsDevice graphicsDevice)
     {
         _ = new QuadBatcher<VertexPositionColorTexture> (graphicsDevice, "Sprite", new SpriteBatchEncoder ());
-        _ = new QuadBatcher<VertexSdfInstance> (graphicsDevice, "SdfInstance", new SdfInstanceBatchEncoder ());
+        _ = new QuadInstanceBatcher<VertexSdfInstance> (graphicsDevice, "SdfInstance", new SdfInstanceBatchEncoder ());
     }
 
     public void Enqueue (RenderCommand command)
