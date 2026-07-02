@@ -1,2 +1,2 @@
-﻿using var game = new AstarPathFinding.Core ();
+﻿using var game = new AstarPathFinding.Main ();
 game.Run ();

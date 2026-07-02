@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Library.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,15 +8,19 @@ namespace AstarPathFinding
 {
     public class AstarPathFinding
     {
-        private static readonly Random _random = new ();
+        private readonly Random _random = new ();
 
-        private readonly Texture2D _texture;
-        private readonly int _cellSize = 32;
+        private readonly Sprite _spriteTemplate;
 
-        private readonly int _size;
-        private readonly float _aliveRate;
+        private readonly Text _textTemplate;
 
-        private static readonly Tuple<int, int>[] _neighborOffsets =
+        private readonly int _width;
+
+        private readonly int _height;
+
+        private readonly Node[] _nodes;
+
+        private readonly (int, int)[] _neighborOffsets =
         [
             new (-1, 0),
             new (0, 1),
@@ -24,52 +28,81 @@ namespace AstarPathFinding
             new (0, -1)
         ];
 
-        private bool[] _cellMap;
+        private readonly float _aliveRate;
+
         private int _startIndex;
+
         private int _endIndex;
 
-        private IEnumerator<int> _stepBehaviour;
-
-        private class PathNode (int index, PathNode parent, int gCost, int hCost)
-        {
-            public int Index = index;
-            public PathNode Parent = parent;
-            public int GCost = gCost;
-            public int HCost = hCost;
-            public int Cost => GCost + HCost;
-            public bool IsPath = false;
-        }
-
         private readonly Dictionary<int, PathNode> _openList = [];
+
         private readonly Dictionary<int, PathNode> _closedList = [];
 
-        private int GetIndex (int x, int y) => x + (y * _size);
+        private IEnumerator<int>? _stepBehaviour;
 
-        private Tuple<int, int> GetCoordinates (int index)
+        private Color _aliveColor = new (224, 224, 224, 255);
+
+        private Color _deadColor = new (32, 32, 32, 255);
+
+        private Color _openListColor = new (96, 255, 96, 255);
+
+        private Color _closedListColor = new (255, 96, 96, 255);
+
+        private Color _costTextColor = new (96, 96, 96, 255);
+
+        private Color _pathColor = Color.Yellow;
+
+        private Color _pathTextColor = Color.Black;
+
+        public AstarPathFinding (int width, int height, int cellSize, float aliveRate)
         {
-            int x = index % _size;
-            int y = index / _size;
-            return new Tuple<int, int> (x, y);
-        }
-
-        private int GetHeuristicCost (int indexA, int indexB)
-        {
-            (int xA, int yA) = GetCoordinates (indexA);
-            (int xB, int yB) = GetCoordinates (indexB);
-            return Math.Abs (xA - xB) + Math.Abs (yA - yB);
-        }
-
-        public AstarPathFinding (int size, float aliveRate)
-        {
-            _texture = new Texture2D (Core.GraphicsDevice, 1, 1);
-            _texture.SetData ([Color.White]);
-
-            if (size <= 0)
+            if (Texture2DResource.TryGetValue ("Pixel", out Texture2DResource? texture) && texture != null)
             {
-                throw new ArgumentException ("Size must be greater than 0", nameof (size));
+                _spriteTemplate = new Sprite (new TextureRegion (texture, 0, 0, 1, 1));
+            }
+            else
+            {
+                throw new InvalidOperationException ("Pixel resource not found");
             }
 
-            _size = size;
+            if (FontResource.TryGetValue ("Font", out FontResource? font) && font != null)
+            {
+                _textTemplate = new Text (font);
+            }
+            else
+            {
+                throw new InvalidOperationException ("Font resource not found");
+            }
+
+            _width = width;
+            _height = height;
+
+            _nodes = new Node[width * height];
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    Sprite sprite = _spriteTemplate.Clone ();
+                    sprite.Size = new Vector2 (cellSize, cellSize);
+                    sprite.Position = new Vector2 (x * cellSize, y * cellSize);
+                    sprite.Color = _deadColor;
+                    sprite.Origin = Vector2.Zero;
+
+                    Text text = _textTemplate.Clone ();
+                    text.Value = string.Empty;
+                    text.Position = new Vector2 (x * cellSize + cellSize / 2f, y * cellSize + cellSize / 2f);
+                    text.Color = _costTextColor;
+
+                    _nodes[x + y * width] = new Node ()
+                    {
+                        Value = false,
+                        Sprite = sprite,
+                        Text = text
+                    };
+                }
+            }
+
             _aliveRate = aliveRate;
 
             Reset ();
@@ -77,28 +110,37 @@ namespace AstarPathFinding
 
         public void Reset ()
         {
-            _cellMap = new bool[_size * _size];
-            Array.Fill (_cellMap, false);
-
-            for (int x = 0; x < _size; x++)
+            foreach (Node node in _nodes)
             {
-                for (int y = 0; y < _size; y++)
-                {
-                    _cellMap[GetIndex (x, y)] = _random.NextDouble () < _aliveRate;
-                }
+                bool isAlive = _random.NextDouble () < _aliveRate;
+                node.Value = isAlive;
+                node.Color = isAlive ? _aliveColor : _deadColor;
+                node.TextValue = string.Empty;
+                node.TextColor = _costTextColor;
             }
 
             _startIndex = -1;
-            while (_startIndex == -1 || !_cellMap[_startIndex])
+            _endIndex = -1;
+
+            while (_startIndex == -1 || !_nodes[_startIndex].Value)
             {
-                _startIndex = _random.Next (_size * _size);
+                _startIndex = _random.Next (_nodes.Length);
             }
 
-            _endIndex = -1;
-            while (_endIndex == -1 || !_cellMap[_endIndex] || _endIndex == _startIndex)
+            while (_endIndex == -1 || !_nodes[_endIndex].Value || _endIndex == _startIndex)
             {
-                _endIndex = _random.Next (_size * _size);
+                _endIndex = _random.Next (_nodes.Length);
             }
+
+            Node startNode = _nodes[_startIndex];
+            startNode.Color = _pathColor;
+            startNode.TextValue = "S";
+            startNode.TextColor = _pathTextColor;
+
+            Node endNode = _nodes[_endIndex];
+            endNode.Color = _pathColor;
+            endNode.TextValue = "E";
+            endNode.TextColor = _pathTextColor;
 
             _openList.Clear ();
             _openList.Add (_startIndex, new PathNode (_startIndex, null, 0, GetHeuristicCost (_startIndex, _endIndex)));
@@ -116,6 +158,8 @@ namespace AstarPathFinding
                 {
                     _stepBehaviour = null;
                 }
+
+                Draw ();
             }
         }
 
@@ -123,19 +167,23 @@ namespace AstarPathFinding
         {
             while (_openList.Count > 0)
             {
-                KeyValuePair<int, PathNode> keyValuePair = _openList.MinBy (p => p.Value.Cost);
-
-                int index = keyValuePair.Key;
-                PathNode pathNode = keyValuePair.Value;
+                (int index, PathNode pathNode) = _openList.MinBy (p => p.Value.Cost);
 
                 _openList.Remove (index);
                 _closedList.Add (index, pathNode);
 
                 if (index == _endIndex)
                 {
-                    while (pathNode != null)
+                    while (true)
                     {
                         pathNode.IsPath = true;
+
+                        if (pathNode.Parent == null)
+                        {
+                            break;
+                        }
+
+                        pathNode.Parent.Next = pathNode;
                         pathNode = pathNode.Parent;
                     }
 
@@ -146,13 +194,13 @@ namespace AstarPathFinding
 
                 foreach ((int xOffset, int yOffset) in _neighborOffsets)
                 {
-                    if (x + xOffset < 0 || x + xOffset >= _size || y + yOffset < 0 || y + yOffset >= _size)
+                    if (x + xOffset < 0 || x + xOffset >= _width || y + yOffset < 0 || y + yOffset >= _height)
                     {
                         continue;
                     }
 
                     int neighborIndex = GetIndex (x + xOffset, y + yOffset);
-                    if (!_cellMap[neighborIndex])
+                    if (!_nodes[neighborIndex].Value)
                     {
                         continue;
                     }
@@ -164,7 +212,7 @@ namespace AstarPathFinding
 
                     int gCost = pathNode.GCost + 1;
 
-                    if (_openList.TryGetValue (neighborIndex, out PathNode neighborNode))
+                    if (_openList.TryGetValue (neighborIndex, out PathNode? neighborNode))
                     {
                         if (neighborNode.GCost > gCost)
                         {
@@ -182,92 +230,87 @@ namespace AstarPathFinding
             }
         }
 
-        public void Draw (SpriteBatch spriteBatch)
+        private void Draw ()
         {
-            Color aliveColor = new (224, 224, 224, 255);
-            Color deadColor = new (32, 32, 32, 255);
-            Color openListColor = new (96, 255, 96, 255);
-            Color closedListColor = new (255, 96, 96, 255);
-            Color costTextColor = new (96, 96, 96, 255);
-            Color pathColor = Color.Yellow;
-            Color pathTextColor = Color.Black;
-
-            for (int index = 0; index < _cellMap.Length; index++)
+            foreach ((int index, PathNode pathNode) in _openList)
             {
-                DrawCell (spriteBatch, index, _cellMap[index] ? aliveColor : deadColor);
-            }
-
-            foreach (PathNode pathNode in _openList.Values)
-            {
-                DrawCell (spriteBatch, pathNode.Index, openListColor);
-
-                if (pathNode.Index != _startIndex && pathNode.Index != _endIndex)
+                if (index != _startIndex && index != _endIndex)
                 {
-                    DrawCellText (spriteBatch, pathNode.Index, pathNode.Cost.ToString (), costTextColor);
+                    Node node = _nodes[index];
+                    node.Color = _openListColor;
+                    node.TextValue = pathNode.Cost.ToString ();
+                    node.TextColor = _costTextColor;
                 }
             }
 
-            foreach (PathNode pathNode in _closedList.Values)
+            foreach ((int index, PathNode pathNode) in _closedList)
             {
-                DrawCell (spriteBatch, pathNode.Index, pathNode.IsPath ? pathColor : closedListColor);
-
-                if (pathNode.Index != _startIndex && pathNode.Index != _endIndex)
+                if (index != _startIndex && index != _endIndex)
                 {
-                    if (pathNode.IsPath && pathNode.Parent != null)
+                    Node node = _nodes[index];
+
+                    if (pathNode.IsPath && pathNode.Next != null)
                     {
-                        (int x0, int y0) = GetCoordinates (pathNode.Parent.Index);
-                        (int x1, int y1) = GetCoordinates (pathNode.Index);
+                        node.Color = _pathColor;
+
+                        (int x0, int y0) = GetCoordinates (pathNode.Index);
+                        (int x1, int y1) = GetCoordinates (pathNode.Next.Index);
 
                         int dx = x1 - x0;
                         int dy = y1 - y0;
 
                         if (dx == -1)
                         {
-                            DrawCellText (spriteBatch, pathNode.Index, "←", pathTextColor);
+                            node.TextValue = "←";
                         }
                         else if (dy == 1)
                         {
-                            DrawCellText (spriteBatch, pathNode.Index, "↑", pathTextColor);
+                            node.TextValue = "↓";
                         }
                         else if (dx == 1)
                         {
-                            DrawCellText (spriteBatch, pathNode.Index, "→", pathTextColor);
+                            node.TextValue = "→";
                         }
                         else if (dy == -1)
                         {
-                            DrawCellText (spriteBatch, pathNode.Index, "↓", pathTextColor);
+                            node.TextValue = "↑";
                         }
+
+                        node.TextColor = _pathTextColor;
                     }
                     else
                     {
-                        DrawCellText (spriteBatch, pathNode.Index, pathNode.Cost.ToString (), costTextColor);
+                        node.Color = _closedListColor;
+                        node.TextValue = pathNode.Cost.ToString ();
+                        node.TextColor = _costTextColor;
                     }
                 }
             }
-
-            DrawCellText (spriteBatch, _startIndex, "S", pathTextColor);
-            DrawCellText (spriteBatch, _endIndex, "E", pathTextColor);
         }
 
-        private void DrawCell (SpriteBatch spriteBatch, int index, Color color)
+        public void Draw (RenderManager render)
         {
-            (int x, int y) = GetCoordinates (index);
-            spriteBatch.Draw (_texture, GetCellRectangle (x, y), color);
+            foreach (Node node in _nodes)
+            {
+                node.Sprite.Draw (render);
+            }
+
+            foreach (Node node in _nodes)
+            {
+                node.Text.Draw (render);
+            }
         }
 
-        private Rectangle GetCellRectangle (int x, int y)
-        {
-            int halfSize = _size * _cellSize / 2;
-            return new Rectangle ((x * _cellSize) - halfSize, halfSize - (y * _cellSize) - _cellSize, _cellSize, _cellSize);
-        }
+        private int GetIndex (int x, int y) => x + (y * _width);
 
-        private void DrawCellText (SpriteBatch spriteBatch, int index, string text, Color color)
+        private (int, int) GetCoordinates (int index) => (index % _width, index / _width);
+
+        private int GetHeuristicCost (int indexA, int indexB)
         {
-            (int x, int y) = GetCoordinates (index);
-            int halfSize = _size * _cellSize / 2;
-            Vector2 textSize = Core.Font.MeasureString (text);
-            Vector2 position = new ((x * _cellSize) - halfSize + (_cellSize - textSize.X) / 2, halfSize - (y * _cellSize) - _cellSize + (_cellSize - textSize.Y) / 2);
-            spriteBatch.DrawString (Core.Font, text, position, color);
+            (int xA, int yA) = GetCoordinates (indexA);
+            (int xB, int yB) = GetCoordinates (indexB);
+
+            return Math.Abs (xA - xB) + Math.Abs (yA - yB);
         }
     }
 }
