@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using MonoGame.Library;
 using MonoGame.Library.Graphics;
 using System;
 using System.Collections.Generic;
@@ -79,19 +80,21 @@ namespace AstarPathFinding
 
             _nodes = new Node[width * height];
 
+            Vector2 offset = new ((Core.ScreenWidth - (width * cellSize)) / 2, (Core.ScreenHeight - (height * cellSize)) / 2);
+
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
                     Sprite sprite = _spriteTemplate.Clone ();
                     sprite.Size = new Vector2 (cellSize, cellSize);
-                    sprite.Position = new Vector2 (x * cellSize, y * cellSize);
+                    sprite.Position = offset + new Vector2 (x * cellSize, y * cellSize);
                     sprite.Color = _deadColor;
                     sprite.Origin = Vector2.Zero;
 
                     Text text = _textTemplate.Clone ();
                     text.Value = string.Empty;
-                    text.Position = new Vector2 (x * cellSize + cellSize / 2f, y * cellSize + cellSize / 2f);
+                    text.Position = offset + new Vector2 (x * cellSize + cellSize / 2f, y * cellSize + cellSize / 2f);
                     text.Color = _costTextColor;
 
                     _nodes[x + y * width] = new Node ()

@@ -1,2 +1,2 @@
-﻿using var game = new CellularAutomata.Core ();
+﻿using var game = new CellularAutomata.Main ();
 game.Run ();

@@ -2,17 +2,13 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Library;
-using MonoGame.Library.Graphics;
 using MonoGame.Library.Input;
 
-namespace AstarPathFinding;
+namespace CellularAutomata;
 
 public class GameScene : Scene
 {
-    private Texture2DResource _pixel = null!;
-    private FontResource _font = null!;
-
-    private AstarPathFinding _astarPathFinding = null!;
+    private CellularAutomata _cellularAutomata = null!;
 
     private readonly float _stepTime = 1f / 4f;
 
@@ -27,20 +23,14 @@ public class GameScene : Scene
 
     public override void LoadContent ()
     {
-        _pixel = new Texture2DResource ("Pixel", new (GraphicsDevice, 1, 1));
-        _pixel.Texture.SetData ([Color.White]);
-
-        _font = new FontResource ("Font", Content.Load<SpriteFont> ("Font"));
-
-        _astarPathFinding = new AstarPathFinding (16, 16, 32, 0.8f);
+        _cellularAutomata = new CellularAutomata (GraphicsDevice, 128, 128, 4, 0.5f);
 
         base.LoadContent ();
     }
 
     public override void UnloadContent ()
     {
-        _pixel.Dispose ();
-        _font.Dispose ();
+        _cellularAutomata.Dispose ();
 
         base.UnloadContent ();
     }
@@ -63,7 +53,7 @@ public class GameScene : Scene
         {
             _nextStepTime -= _stepTime;
 
-            _astarPathFinding.NextStep ();
+            _cellularAutomata.NextStep ();
         }
 
         base.Update (gameTime);
@@ -73,7 +63,7 @@ public class GameScene : Scene
     {
         GraphicsDevice.Clear (Color.CornflowerBlue);
 
-        _astarPathFinding.Draw (Render);
+        _cellularAutomata.Draw (Render);
 
         base.Draw (gameTime);
     }
@@ -82,6 +72,6 @@ public class GameScene : Scene
     {
         _nextStepTime = 0f;
 
-        _astarPathFinding.Reset ();
+        _cellularAutomata.Reset ();
     }
 }

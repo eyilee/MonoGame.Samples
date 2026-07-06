@@ -1,6 +1,6 @@
 ﻿using MonoGame.Library;
 
-namespace AstarPathFinding;
+namespace CellularAutomata;
 
 public class Main : Core
 {
@@ -9,7 +9,7 @@ public class Main : Core
     private const int WindowHeight = 600;
 
     public Main ()
-        : base ("AstarPathFinding", WindowWidth, WindowHeight, false)
+        : base ("CellularAutomata", WindowWidth, WindowHeight, false)
     {
     }
 

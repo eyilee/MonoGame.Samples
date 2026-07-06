@@ -1,20 +1,26 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Library;
+using MonoGame.Library.Graphics;
 using System;
 
 namespace CellularAutomata
 {
-    public class CellularAutomata
+    public class CellularAutomata : IDisposable
     {
-        private static readonly Random _random = new ();
+        private readonly Random _random = new ();
 
-        private readonly Texture2D _texture;
-        private readonly int _cellSize = 4;
+        private readonly Canvas _canvas;
 
-        private readonly int _size;
-        private readonly float _aliveRate;
+        private readonly int _width;
 
-        private static readonly Tuple<int, int>[] _neighborOffsets =
+        private readonly int _height;
+
+        private bool[] _nodes;
+
+        private bool[] _swapNodes;
+
+        private readonly (int, int)[] _neighborOffsets =
         [
             new (-1, 1),
             new (0, 1),
@@ -26,113 +32,124 @@ namespace CellularAutomata
             new (1, -1)
         ];
 
-        private bool[][] _cellMap;
-        private int _currentIndex = 0;
+        private readonly float _aliveRate;
 
-        private int GetIndex (int x, int y)
+        private Color _aliveColor = new (224, 224, 224, 255);
+
+        private Color _deadColor = new (32, 32, 32, 255);
+
+        private bool _disposed;
+
+        public CellularAutomata (GraphicsDevice graphicsDevice, int width, int height, int cellSize, float aliveRate)
         {
-            x = ((x % _size) + _size) % _size;
-            y = ((y % _size) + _size) % _size;
-            return x + (y * _size);
-        }
-
-        public CellularAutomata (int size, float aliveRate)
-        {
-            _texture = new Texture2D (Core.GraphicsDevice, 1, 1);
-            _texture.SetData ([Color.White]);
-
-            if (size <= 0)
-            {
-                throw new ArgumentException ("Size must be greater than 0", nameof (size));
-            }
-
-            _size = size;
+            _canvas = new Canvas (graphicsDevice, "CellularAutomata", Core.ScreenWidth / 2, Core.ScreenHeight / 2, width, height, cellSize);
+            _width = width;
+            _height = height;
             _aliveRate = aliveRate;
+            _nodes = new bool[width * height];
+            _swapNodes = new bool[width * height];
 
             Reset ();
         }
 
+        ~CellularAutomata () => Dispose (false);
+
         public void Reset ()
         {
-            _cellMap = new bool[2][];
-
-            for (int i = 0; i < _cellMap.Length; i++)
+            for (int i = 0; i < _nodes.Length; i++)
             {
-                _cellMap[i] = new bool[_size * _size];
-                Array.Fill (_cellMap[i], false);
-            }
-
-            _currentIndex = 0;
-
-            for (int x = 0; x < _size; x++)
-            {
-                for (int y = 0; y < _size; y++)
-                {
-                    _cellMap[_currentIndex][GetIndex (x, y)] = _random.NextDouble () < _aliveRate;
-                }
+                _nodes[i] = _random.NextDouble () < _aliveRate;
             }
         }
 
         public void NextStep ()
         {
-            int nextIndex = (_currentIndex + 1) % _cellMap.Length;
-
-            for (int x = 0; x < _size; x++)
+            for (int x = 0; x < _width; x++)
             {
-                for (int y = 0; y < _size; y++)
+                for (int y = 0; y < _height; y++)
                 {
                     int aliveNeighbors = 0;
+
                     foreach ((int xOffset, int yOffset) in _neighborOffsets)
                     {
-                        aliveNeighbors += _cellMap[_currentIndex][GetIndex (x + xOffset, y + yOffset)] ? 1 : 0;
+                        if (x + xOffset < 0 || x + xOffset >= _width || y + yOffset < 0 || y + yOffset >= _height)
+                        {
+                            continue;
+                        }
+
+                        if (_nodes[GetIndex (x + xOffset, y + yOffset)])
+                        {
+                            aliveNeighbors++;
+                        }
                     }
 
-                    bool isAlive = _cellMap[_currentIndex][GetIndex (x, y)];
-                    if (isAlive)
+                    int index = GetIndex (x, y);
+
+                    if (_nodes[index])
                     {
                         if (aliveNeighbors < 2)
                         {
-                            _cellMap[nextIndex][GetIndex (x, y)] = false;
+                            _swapNodes[index] = false;
                         }
                         else if (aliveNeighbors > 3)
                         {
-                            _cellMap[nextIndex][GetIndex (x, y)] = false;
+                            _swapNodes[index] = false;
                         }
                         else
                         {
-                            _cellMap[nextIndex][GetIndex (x, y)] = true;
+                            _swapNodes[index] = true;
                         }
                     }
                     else
                     {
                         if (aliveNeighbors == 3)
                         {
-                            _cellMap[nextIndex][GetIndex (x, y)] = true;
+                            _swapNodes[index] = true;
                         }
                         else
                         {
-                            _cellMap[nextIndex][GetIndex (x, y)] = false;
+                            _swapNodes[index] = false;
                         }
                     }
                 }
             }
 
-            _currentIndex = nextIndex;
+            (_nodes, _swapNodes) = (_swapNodes, _nodes);
+
+            Draw ();
         }
 
-        public void Draw (SpriteBatch spriteBatch)
+        private void Draw ()
         {
-            int halfSize = _size * _cellSize / 2;
-            Color aliveColor = new (224, 224, 224, 255);
-            Color deadColor = new (32, 32, 32, 255);
-
-            for (int x = 0; x < _size; x++)
+            for (int i = 0; i < _nodes.Length; i++)
             {
-                for (int y = 0; y < _size; y++)
+                _canvas.SetPixel (i, _nodes[i] ? _aliveColor : _deadColor);
+            }
+        }
+
+        public void Draw (RenderManager render)
+        {
+            _canvas.Draw (render);
+        }
+
+        private int GetIndex (int x, int y) => x + (y * _width);
+
+        public void Dispose ()
+        {
+            Dispose (true);
+            GC.SuppressFinalize (this);
+        }
+
+        protected virtual void Dispose (bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
                 {
-                    bool isAlive = _cellMap[_currentIndex][GetIndex (x, y)];
-                    spriteBatch.Draw (_texture, new Rectangle ((x * _cellSize) - halfSize, halfSize - (y * _cellSize) - _cellSize, _cellSize, _cellSize), isAlive ? aliveColor : deadColor);
+                    _canvas.Dispose ();
                 }
+
+                _disposed = true;
             }
         }
     }
