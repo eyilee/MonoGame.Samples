@@ -197,12 +197,16 @@ namespace AstarPathFinding
 
                 foreach ((int xOffset, int yOffset) in _neighborOffsets)
                 {
-                    if (x + xOffset < 0 || x + xOffset >= _width || y + yOffset < 0 || y + yOffset >= _height)
+                    int neighborX = x + xOffset;
+                    int neighborY = y + yOffset;
+
+                    if (neighborX < 0 || neighborX >= _width || neighborY < 0 || neighborY >= _height)
                     {
                         continue;
                     }
 
-                    int neighborIndex = GetIndex (x + xOffset, y + yOffset);
+                    int neighborIndex = GetIndex (neighborX, neighborY);
+
                     if (!_nodes[neighborIndex].Value)
                     {
                         continue;

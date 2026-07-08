@@ -72,12 +72,15 @@ namespace CellularAutomata
 
                     foreach ((int xOffset, int yOffset) in _neighborOffsets)
                     {
-                        if (x + xOffset < 0 || x + xOffset >= _width || y + yOffset < 0 || y + yOffset >= _height)
+                        int neighborX = x + xOffset;
+                        int neighborY = y + yOffset;
+
+                        if (neighborX < 0 || neighborX >= _width || neighborY < 0 || neighborY >= _height)
                         {
                             continue;
                         }
 
-                        if (_nodes[GetIndex (x + xOffset, y + yOffset)])
+                        if (_nodes[GetIndex (neighborX, neighborY)])
                         {
                             aliveNeighbors++;
                         }

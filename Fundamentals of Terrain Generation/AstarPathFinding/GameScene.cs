@@ -10,6 +10,7 @@ namespace AstarPathFinding;
 public class GameScene : Scene
 {
     private Texture2DResource _pixel = null!;
+
     private FontResource _font = null!;
 
     private AstarPathFinding _astarPathFinding = null!;

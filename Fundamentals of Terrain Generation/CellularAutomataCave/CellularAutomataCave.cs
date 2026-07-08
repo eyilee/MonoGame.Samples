@@ -4,7 +4,6 @@ using MonoGame.Library;
 using MonoGame.Library.Graphics;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace CellularAutomataCave
 {
@@ -282,8 +281,6 @@ namespace CellularAutomataCave
 
                 yield return 0;
             }
-
-            yield return 0;
         }
 
         private void Draw ()
