@@ -16,6 +16,7 @@ Windows (Desktop GL)
 
 ## Usage
 Press "N" key to generate next map.
+Press "R" key to redo the current map.
 
 ## Reference
 [https://code.tutsplus.com/generate-random-cave-levels-using-cellular-automata--gamedev-9664t](https://code.tutsplus.com/generate-random-cave-levels-using-cellular-automata--gamedev-9664t)\

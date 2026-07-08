@@ -4,11 +4,11 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Library;
 using MonoGame.Library.Input;
 
-namespace CellularAutomata;
+namespace CellularAutomataCave;
 
 public class GameScene : Scene
 {
-    private CellularAutomata _cellularAutomata = null!;
+    private CellularAutomataCave _cellularAutomataCave = null!;
 
     private readonly float _stepTime = 1f / 4f;
 
@@ -17,20 +17,21 @@ public class GameScene : Scene
     public override void Initialize ()
     {
         Input.Keyboard.SubscribePressed (Keys.N, NextMap);
+        Input.Keyboard.SubscribePressed (Keys.R, Redo);
 
         base.Initialize ();
     }
 
     public override void LoadContent ()
     {
-        _cellularAutomata = new CellularAutomata (GraphicsDevice, 128, 128, 4, 0.5f);
+        _cellularAutomataCave = new CellularAutomataCave (GraphicsDevice, 128, 128, 4, 0.35f, 8);
 
         base.LoadContent ();
     }
 
     public override void UnloadContent ()
     {
-        _cellularAutomata.Dispose ();
+        _cellularAutomataCave.Dispose ();
 
         base.UnloadContent ();
     }
@@ -53,7 +54,7 @@ public class GameScene : Scene
         {
             _nextStepTime -= _stepTime;
 
-            _cellularAutomata.NextStep ();
+            _cellularAutomataCave.NextStep ();
         }
 
         base.Update (gameTime);
@@ -63,7 +64,7 @@ public class GameScene : Scene
     {
         GraphicsDevice.Clear (Color.CornflowerBlue);
 
-        _cellularAutomata.Draw (Render);
+        _cellularAutomataCave.Draw (Render);
 
         base.Draw (gameTime);
     }
@@ -72,6 +73,13 @@ public class GameScene : Scene
     {
         _nextStepTime = 0f;
 
-        _cellularAutomata.Reset ();
+        _cellularAutomataCave.Reset ();
+    }
+
+    private void Redo (object? sender, KeyboardEventArgs eventArgs)
+    {
+        _nextStepTime = 0f;
+
+        _cellularAutomataCave.Redo ();
     }
 }
