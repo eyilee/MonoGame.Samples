@@ -19,6 +19,10 @@ namespace AstarPathFinding
 
         private readonly int _height;
 
+        private readonly int _size;
+
+        private readonly bool[] _originNodes;
+
         private readonly Node[] _nodes;
 
         private readonly (int, int)[] _neighborOffsets =
@@ -77,8 +81,9 @@ namespace AstarPathFinding
 
             _width = width;
             _height = height;
-
-            _nodes = new Node[width * height];
+            _size = width * height;
+            _originNodes = new bool[_size];
+            _nodes = new Node[_size];
 
             Vector2 offset = new ((Core.ScreenWidth - (width * cellSize)) / 2, (Core.ScreenHeight - (height * cellSize)) / 2);
 
@@ -97,7 +102,7 @@ namespace AstarPathFinding
                     text.Position = offset + new Vector2 (x * cellSize + cellSize / 2f, y * cellSize + cellSize / 2f);
                     text.Color = _costTextColor;
 
-                    _nodes[x + y * width] = new Node ()
+                    _nodes[GetIndex (x, y)] = new Node ()
                     {
                         Value = false,
                         Sprite = sprite,
@@ -113,9 +118,12 @@ namespace AstarPathFinding
 
         public void Reset ()
         {
-            foreach (Node node in _nodes)
+            for (int i = 0; i < _size; i++)
             {
                 bool isAlive = _random.NextDouble () < _aliveRate;
+                _originNodes[i] = isAlive;
+
+                Node node = _nodes[i];
                 node.Value = isAlive;
                 node.Color = isAlive ? _aliveColor : _deadColor;
                 node.TextValue = string.Empty;
@@ -127,12 +135,12 @@ namespace AstarPathFinding
 
             while (_startIndex == -1 || !_nodes[_startIndex].Value)
             {
-                _startIndex = _random.Next (_nodes.Length);
+                _startIndex = _random.Next (_size);
             }
 
             while (_endIndex == -1 || !_nodes[_endIndex].Value || _endIndex == _startIndex)
             {
-                _endIndex = _random.Next (_nodes.Length);
+                _endIndex = _random.Next (_size);
             }
 
             Node startNode = _nodes[_startIndex];
@@ -150,7 +158,42 @@ namespace AstarPathFinding
 
             _closedList.Clear ();
 
-            _stepBehaviour = AstarPathFindingStepBehaviour ();
+            _stepBehaviour = Run ();
+
+            Draw ();
+        }
+
+        public void Redo ()
+        {
+            for (int i = 0; i < _size; i++)
+            {
+                bool isAlive = _originNodes[i];
+
+                Node node = _nodes[i];
+                node.Value = isAlive;
+                node.Color = isAlive ? _aliveColor : _deadColor;
+                node.TextValue = string.Empty;
+                node.TextColor = _costTextColor;
+            }
+
+            Node startNode = _nodes[_startIndex];
+            startNode.Color = _pathColor;
+            startNode.TextValue = "S";
+            startNode.TextColor = _pathTextColor;
+
+            Node endNode = _nodes[_endIndex];
+            endNode.Color = _pathColor;
+            endNode.TextValue = "E";
+            endNode.TextColor = _pathTextColor;
+
+            _openList.Clear ();
+            _openList.Add (_startIndex, new PathNode (_startIndex, null, 0, GetHeuristicCost (_startIndex, _endIndex)));
+
+            _closedList.Clear ();
+
+            _stepBehaviour = Run ();
+
+            Draw ();
         }
 
         public void NextStep ()
@@ -166,7 +209,7 @@ namespace AstarPathFinding
             }
         }
 
-        private IEnumerator<int> AstarPathFindingStepBehaviour ()
+        private IEnumerator<int> Run ()
         {
             while (_openList.Count > 0)
             {

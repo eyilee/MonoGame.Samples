@@ -22,6 +22,7 @@ public class GameScene : Scene
     public override void Initialize ()
     {
         Input.Keyboard.SubscribePressed (Keys.N, NextMap);
+        Input.Keyboard.SubscribePressed (Keys.R, Redo);
 
         base.Initialize ();
     }
@@ -51,6 +52,7 @@ public class GameScene : Scene
         if (disposing)
         {
             Input.Keyboard.UnsubscribePressed (Keys.N, NextMap);
+            Input.Keyboard.UnsubscribePressed (Keys.R, Redo);
         }
 
         base.Dispose (disposing);
@@ -84,5 +86,12 @@ public class GameScene : Scene
         _nextStepTime = 0f;
 
         _astarPathFinding.Reset ();
+    }
+
+    private void Redo (object? sender, KeyboardEventArgs eventArgs)
+    {
+        _nextStepTime = 0f;
+
+        _astarPathFinding.Redo ();
     }
 }

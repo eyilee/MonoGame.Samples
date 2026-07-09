@@ -2,13 +2,16 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Library;
+using MonoGame.Library.Graphics;
 using MonoGame.Library.Input;
 
-namespace CellularAutomataCave;
+namespace SineWave1DHill;
 
 public class GameScene : Scene
 {
-    private CellularAutomataCave _cellularAutomataCave = null!;
+    private Texture2DResource _pixel = null!;
+
+    private SineWave1DHill _sineWave1DHill = null!;
 
     private readonly float _stepTime = 1f / 4f;
 
@@ -17,21 +20,23 @@ public class GameScene : Scene
     public override void Initialize ()
     {
         Input.Keyboard.SubscribePressed (Keys.N, NextMap);
-        Input.Keyboard.SubscribePressed (Keys.R, Redo);
 
         base.Initialize ();
     }
 
     public override void LoadContent ()
     {
-        _cellularAutomataCave = new CellularAutomataCave (GraphicsDevice, 128, 128, 4, 0.38f, 8);
+        _pixel = new Texture2DResource ("Pixel", new (GraphicsDevice, 1, 1));
+        _pixel.Texture.SetData ([Color.White]);
+
+        _sineWave1DHill = new SineWave1DHill (128, 4, 512, 6);
 
         base.LoadContent ();
     }
 
     public override void UnloadContent ()
     {
-        _cellularAutomataCave.Dispose ();
+        _pixel.Dispose ();
 
         base.UnloadContent ();
     }
@@ -41,7 +46,6 @@ public class GameScene : Scene
         if (disposing)
         {
             Input.Keyboard.UnsubscribePressed (Keys.N, NextMap);
-            Input.Keyboard.UnsubscribePressed (Keys.R, Redo);
         }
 
         base.Dispose (disposing);
@@ -55,7 +59,7 @@ public class GameScene : Scene
         {
             _nextStepTime -= _stepTime;
 
-            _cellularAutomataCave.NextStep ();
+            _sineWave1DHill.NextStep ();
         }
 
         base.Update (gameTime);
@@ -65,7 +69,7 @@ public class GameScene : Scene
     {
         GraphicsDevice.Clear (Color.CornflowerBlue);
 
-        _cellularAutomataCave.Draw (Render);
+        _sineWave1DHill.Draw (Render);
 
         base.Draw (gameTime);
     }
@@ -74,13 +78,6 @@ public class GameScene : Scene
     {
         _nextStepTime = 0f;
 
-        _cellularAutomataCave.Reset ();
-    }
-
-    private void Redo (object? sender, KeyboardEventArgs eventArgs)
-    {
-        _nextStepTime = 0f;
-
-        _cellularAutomataCave.Redo ();
+        _sineWave1DHill.Reset ();
     }
 }

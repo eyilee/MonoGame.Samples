@@ -4,11 +4,11 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Library;
 using MonoGame.Library.Input;
 
-namespace CellularAutomataCave;
+namespace MidpointDisplacement;
 
 public class GameScene : Scene
 {
-    private CellularAutomataCave _cellularAutomataCave = null!;
+    private MidpointDisplacement _midpointDisplacement = null!;
 
     private readonly float _stepTime = 1f / 4f;
 
@@ -17,21 +17,20 @@ public class GameScene : Scene
     public override void Initialize ()
     {
         Input.Keyboard.SubscribePressed (Keys.N, NextMap);
-        Input.Keyboard.SubscribePressed (Keys.R, Redo);
 
         base.Initialize ();
     }
 
     public override void LoadContent ()
     {
-        _cellularAutomataCave = new CellularAutomataCave (GraphicsDevice, 128, 128, 4, 0.38f, 8);
+        _midpointDisplacement = new MidpointDisplacement (GraphicsDevice, 6, 8, 1f, 0.75f);
 
         base.LoadContent ();
     }
 
     public override void UnloadContent ()
     {
-        _cellularAutomataCave.Dispose ();
+        _midpointDisplacement.Dispose ();
 
         base.UnloadContent ();
     }
@@ -41,7 +40,6 @@ public class GameScene : Scene
         if (disposing)
         {
             Input.Keyboard.UnsubscribePressed (Keys.N, NextMap);
-            Input.Keyboard.UnsubscribePressed (Keys.R, Redo);
         }
 
         base.Dispose (disposing);
@@ -55,7 +53,7 @@ public class GameScene : Scene
         {
             _nextStepTime -= _stepTime;
 
-            _cellularAutomataCave.NextStep ();
+            _midpointDisplacement.NextStep ();
         }
 
         base.Update (gameTime);
@@ -65,7 +63,7 @@ public class GameScene : Scene
     {
         GraphicsDevice.Clear (Color.CornflowerBlue);
 
-        _cellularAutomataCave.Draw (Render);
+        _midpointDisplacement.Draw (Render);
 
         base.Draw (gameTime);
     }
@@ -74,13 +72,6 @@ public class GameScene : Scene
     {
         _nextStepTime = 0f;
 
-        _cellularAutomataCave.Reset ();
-    }
-
-    private void Redo (object? sender, KeyboardEventArgs eventArgs)
-    {
-        _nextStepTime = 0f;
-
-        _cellularAutomataCave.Redo ();
+        _midpointDisplacement.Reset ();
     }
 }

@@ -13,6 +13,7 @@ Windows (Desktop GL)
 
 ## Usage
 Press "N" key to generate next map.
+Press "R" key to redo the current map.
 
 ## Reference
 [https://en.wikipedia.org/wiki/Conway's_Game_of_Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life)

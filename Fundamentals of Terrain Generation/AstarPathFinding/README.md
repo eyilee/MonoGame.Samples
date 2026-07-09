@@ -10,6 +10,7 @@ Windows (Desktop GL)
 
 ## Usage
 Press "N" key to generate next map.
+Press "R" key to redo the current map.
 
 ## Reference
 [https://www.kodeco.com/3016-introduction-to-a-pathfinding](https://www.kodeco.com/3016-introduction-to-a-pathfinding)

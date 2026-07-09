@@ -10,9 +10,9 @@ namespace CellularAutomataCave
 
         private static readonly int _aliveCost = 1;
 
-        private static readonly int _deadCostBase = 10;
+        private static readonly int _deadCostBase = 5;
 
-        private static readonly int _deadCostRange = 3;
+        private static readonly int _deadCostRange = 8;
 
         private static readonly (int, int)[] _neighborOffsets =
         [

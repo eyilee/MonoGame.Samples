@@ -17,7 +17,9 @@ namespace CellularAutomataCave
 
         private readonly int _height;
 
-        private bool[] _originNodes;
+        private readonly int _size;
+
+        private readonly bool[] _originNodes;
 
         private bool[] _nodes;
 
@@ -62,11 +64,12 @@ namespace CellularAutomataCave
             _canvas = new Canvas (graphicsDevice, "CellularAutomataCave", Core.ScreenWidth / 2, Core.ScreenHeight / 2, width, height, cellSize);
             _width = width;
             _height = height;
+            _size = width * height;
             _aliveRate = aliveRate;
             _iteration = iteration;
-            _originNodes = new bool[width * height];
-            _nodes = new bool[width * height];
-            _swapNodes = new bool[width * height];
+            _originNodes = new bool[_size];
+            _nodes = new bool[_size];
+            _swapNodes = new bool[_size];
             _minCaveSize = int.Log2 (width) * int.Log2 (height);
 
             Reset ();
@@ -76,23 +79,23 @@ namespace CellularAutomataCave
 
         public void Reset ()
         {
-            for (int i = 0; i < _nodes.Length; i++)
+            for (int i = 0; i < _size; i++)
             {
                 _originNodes[i] = _random.NextDouble () < _aliveRate;
-                _nodes[i] = _originNodes[i];
             }
 
+            _originNodes.CopyTo (_nodes, 0);
             _stepBehaviour = Run ();
+
+            Draw ();
         }
 
         public void Redo ()
         {
-            for (int i = 0; i < _nodes.Length; i++)
-            {
-                _nodes[i] = _originNodes[i];
-            }
-
+            _originNodes.CopyTo (_nodes, 0);
             _stepBehaviour = Run ();
+
+            Draw ();
         }
 
         public void NextStep ()
@@ -140,25 +143,11 @@ namespace CellularAutomataCave
 
                         if (_nodes[index])
                         {
-                            if (aliveNeighbors < 3)
-                            {
-                                _swapNodes[index] = false;
-                            }
-                            else
-                            {
-                                _swapNodes[index] = true;
-                            }
+                            _swapNodes[index] = aliveNeighbors >= 3;
                         }
                         else
                         {
-                            if (aliveNeighbors > 4)
-                            {
-                                _swapNodes[index] = true;
-                            }
-                            else
-                            {
-                                _swapNodes[index] = false;
-                            }
+                            _swapNodes[index] = aliveNeighbors > 4;
                         }
                     }
                 }
@@ -285,7 +274,7 @@ namespace CellularAutomataCave
 
         private void Draw ()
         {
-            for (int i = 0; i < _nodes.Length; i++)
+            for (int i = 0; i < _size; i++)
             {
                 _canvas.SetPixel (i, _nodes[i] ? _aliveColor : _deadColor);
             }
