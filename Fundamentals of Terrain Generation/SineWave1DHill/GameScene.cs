@@ -9,6 +9,8 @@ namespace SineWave1DHill;
 
 public class GameScene : Scene
 {
+    private Texture2D _pixelTexture = null!;
+
     private Texture2DResource _pixel = null!;
 
     private SineWave1DHill _sineWave1DHill = null!;
@@ -26,8 +28,10 @@ public class GameScene : Scene
 
     public override void LoadContent ()
     {
+        _pixelTexture = new Texture2D (GraphicsDevice, 1, 1);
+        _pixelTexture.SetData ([Color.White]);
+
         _pixel = new Texture2DResource ("Pixel", new (GraphicsDevice, 1, 1));
-        _pixel.Texture.SetData ([Color.White]);
 
         _sineWave1DHill = new SineWave1DHill (128, 4, 512, 6);
 
@@ -37,6 +41,7 @@ public class GameScene : Scene
     public override void UnloadContent ()
     {
         _pixel.Dispose ();
+        _pixelTexture.Dispose ();
 
         base.UnloadContent ();
     }

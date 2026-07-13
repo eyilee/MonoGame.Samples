@@ -9,6 +9,8 @@ namespace AstarPathFinding;
 
 public class GameScene : Scene
 {
+    private Texture2D _pixelTexture = null!;
+
     private Texture2DResource _pixel = null!;
 
     private FontResource _font = null!;
@@ -29,8 +31,10 @@ public class GameScene : Scene
 
     public override void LoadContent ()
     {
-        _pixel = new Texture2DResource ("Pixel", new (GraphicsDevice, 1, 1));
-        _pixel.Texture.SetData ([Color.White]);
+        _pixelTexture = new Texture2D (GraphicsDevice, 1, 1);
+        _pixelTexture.SetData ([Color.White]);
+
+        _pixel = new Texture2DResource ("Pixel", _pixelTexture);
 
         _font = new FontResource ("Font", Content.Load<SpriteFont> ("Font"));
 
@@ -41,8 +45,9 @@ public class GameScene : Scene
 
     public override void UnloadContent ()
     {
-        _pixel.Dispose ();
         _font.Dispose ();
+        _pixel.Dispose ();
+        _pixelTexture.Dispose ();
 
         base.UnloadContent ();
     }
