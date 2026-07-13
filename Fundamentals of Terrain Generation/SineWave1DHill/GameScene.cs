@@ -31,7 +31,7 @@ public class GameScene : Scene
         _pixelTexture = new Texture2D (GraphicsDevice, 1, 1);
         _pixelTexture.SetData ([Color.White]);
 
-        _pixel = new Texture2DResource ("Pixel", new (GraphicsDevice, 1, 1));
+        _pixel = new Texture2DResource ("Pixel", _pixelTexture);
 
         _sineWave1DHill = new SineWave1DHill (128, 4, 512, 6);
 
