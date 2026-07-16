@@ -1,11 +1,11 @@
-﻿using MonoGame.Samples.Library;
+﻿using MonoGame.Library;
 
-namespace MonoGame.Samples.VoronoiDiagram;
+namespace VoronoiDiagram;
 
 public class Main : Core
 {
-    private const int WindowWidth = 1280;
-    private const int WindowHeight = 720;
+    private const int WindowWidth = 800;
+    private const int WindowHeight = 600;
 
     public Main ()
         : base ("VoronoiDiagram", WindowWidth, WindowHeight, false)

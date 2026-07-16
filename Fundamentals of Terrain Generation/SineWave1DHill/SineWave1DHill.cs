@@ -132,7 +132,7 @@ namespace SineWave1DHill
             return (value1 * (1f - f)) + (value2 * f);
         }
 
-        public void Draw ()
+        private void Draw ()
         {
             Vector2 offset = new ((Core.ScreenWidth - (_size * _width)) / 2, (Core.ScreenHeight + _height) / 2);
 

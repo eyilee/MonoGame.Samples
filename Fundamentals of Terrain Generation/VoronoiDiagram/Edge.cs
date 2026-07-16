@@ -1,38 +1,56 @@
 ﻿using Microsoft.Xna.Framework;
+using MonoGame.Library.Graphics;
 
-namespace MonoGame.Samples.VoronoiDiagram;
+namespace VoronoiDiagram;
 
 public class Edge
 {
-    private enum Direction
+    public enum EdgeDirection
     {
         Left,
-        Right,
+        Right
     }
 
-    public Vector2 StartPoint;
-    public Vector2 EndPoint;
+    private readonly SdfLine _shape = new ();
+
+    public Vector2 Start
+    {
+        get => _shape.Start;
+        set => _shape.Start = value;
+    }
+
+    public Vector2 End
+    {
+        get => _shape.End;
+        set => _shape.End = value;
+    }
+
     public bool HasVertex;
 
     public Vector2 LeftSite;
+
     public Vector2 RightSite;
 
-    private readonly float _lerp;
-    private readonly Direction _direction;
+    public float Lerp;
 
-    public bool IsInfinityLerp () => float.IsPositiveInfinity (_lerp) || float.IsNegativeInfinity (_lerp);
+    public EdgeDirection Direction;
+
+    public bool IsInfinityLerp () => float.IsPositiveInfinity (Lerp) || float.IsNegativeInfinity (Lerp);
 
     public Edge (Vector2 startPoint, Vector2 leftSite, Vector2 rightSite)
     {
-        StartPoint = startPoint;
-        EndPoint = startPoint;
-        HasVertex = false;
-
+        Start = startPoint;
+        End = startPoint;
         LeftSite = leftSite;
         RightSite = rightSite;
 
-        _lerp = GetLerp ();
-        _direction = GetDirection ();
+        Lerp = GetLerp ();
+        Direction = GetDirection ();
+    }
+
+    public void Draw (RenderManager render)
+    {
+        _shape.Draw (render);
     }
 
     private float GetLerp ()
@@ -45,19 +63,19 @@ public class Edge
         return (RightSite.X - LeftSite.X) / (LeftSite.Y - RightSite.Y);
     }
 
-    private Direction GetDirection ()
+    private EdgeDirection GetDirection ()
     {
-        if (_lerp > 0)
+        if (Lerp > 0)
         {
-            return LeftSite.X < RightSite.X ? Direction.Left : Direction.Right;
+            return LeftSite.X < RightSite.X ? EdgeDirection.Right : EdgeDirection.Left;
         }
-        else if (_lerp < 0)
+        else if (Lerp < 0)
         {
-            return LeftSite.X > RightSite.X ? Direction.Left : Direction.Right;
+            return LeftSite.X > RightSite.X ? EdgeDirection.Right : EdgeDirection.Left;
         }
         else
         {
-            return LeftSite.Y > RightSite.Y ? Direction.Left : Direction.Right;
+            return LeftSite.Y > RightSite.Y ? EdgeDirection.Right : EdgeDirection.Left;
         }
     }
 
@@ -69,7 +87,7 @@ public class Edge
         }
 
         HasVertex = true;
-        EndPoint = vertexPoint;
+        End = vertexPoint;
     }
 
     public void UpdateDirectrix (float directrixY)
@@ -78,36 +96,45 @@ public class Edge
         {
             Vector2[] intersectPoints = Parabola.GetIntersectPoints (LeftSite, RightSite, directrixY);
 
+            foreach (var p in intersectPoints)
+            {
+                if (p.Y > directrixY)
+                {
+                    int a = 0;
+                    a++;
+                }
+            }
+
             if (intersectPoints.Length == 0)
             {
                 return;
             }
             else if (intersectPoints.Length == 1)
             {
-                EndPoint = intersectPoints[0];
+                End = intersectPoints[0];
             }
             else
             {
-                if (_direction == Direction.Left)
+                if (Direction == EdgeDirection.Left)
                 {
                     if (intersectPoints[0].X < intersectPoints[1].X)
                     {
-                        EndPoint = intersectPoints[0];
+                        End = intersectPoints[0];
                     }
                     else
                     {
-                        EndPoint = intersectPoints[1];
+                        End = intersectPoints[1];
                     }
                 }
                 else
                 {
                     if (intersectPoints[0].X > intersectPoints[1].X)
                     {
-                        EndPoint = intersectPoints[0];
+                        End = intersectPoints[0];
                     }
                     else
                     {
-                        EndPoint = intersectPoints[1];
+                        End = intersectPoints[1];
                     }
                 }
             }
@@ -123,14 +150,14 @@ public class Edge
 
         HasVertex = true;
 
-        if (_direction == Direction.Left)
+        if (Direction == EdgeDirection.Left)
         {
-            if (_lerp >= 0)
+            if (Lerp >= 0)
             {
                 float x = GetX (minY);
                 if (x >= minX && x <= maxX)
                 {
-                    EndPoint = new Vector2 (x, minY);
+                    End = new Vector2 (x, minY);
                 }
             }
             else
@@ -138,24 +165,24 @@ public class Edge
                 float x = GetX (maxY);
                 if (x >= minX && x <= maxX)
                 {
-                    EndPoint = new Vector2 (x, maxY);
+                    End = new Vector2 (x, maxY);
                 }
             }
 
             float y = GetY (minX);
             if (y >= minY && y <= maxY)
             {
-                EndPoint = new Vector2 (minX, y);
+                End = new Vector2 (minX, y);
             }
         }
         else
         {
-            if (_lerp >= 0)
+            if (Lerp >= 0)
             {
                 float x = GetX (maxY);
                 if (x >= minX && x <= maxX)
                 {
-                    EndPoint = new Vector2 (x, maxY);
+                    End = new Vector2 (x, maxY);
                 }
             }
             else
@@ -163,36 +190,36 @@ public class Edge
                 float x = GetX (minY);
                 if (x >= minX && x <= maxX)
                 {
-                    EndPoint = new Vector2 (x, minY);
+                    End = new Vector2 (x, minY);
                 }
             }
 
             float y = GetY (maxX);
             if (y >= minY && y <= maxY)
             {
-                EndPoint = new Vector2 (maxX, y);
+                End = new Vector2 (maxX, y);
             }
         }
     }
 
     public float GetX (float y)
     {
-        if (_lerp == 0)
+        if (Lerp == 0)
         {
-            return StartPoint.X;
+            return Start.X;
         }
 
-        return StartPoint.X + (y - StartPoint.Y) / _lerp;
+        return Start.X + (y - Start.Y) / Lerp;
     }
 
     public float GetY (float x)
     {
         if (IsInfinityLerp ())
         {
-            return StartPoint.Y;
+            return Start.Y;
         }
 
-        return StartPoint.Y + (x - StartPoint.X) * _lerp;
+        return Start.Y + (x - Start.X) * Lerp;
     }
 
     public bool HasValidIntersectPoint (Edge? other)
@@ -202,7 +229,7 @@ public class Edge
             return false;
         }
 
-        if (_lerp == other._lerp || StartPoint == other.StartPoint)
+        if (Lerp == other.Lerp || Start == other.Start)
         {
             return false;
         }
@@ -212,25 +239,25 @@ public class Edge
         bool isValid = true;
         if (!IsInfinityLerp ())
         {
-            if (_direction == Direction.Left)
+            if (Direction == EdgeDirection.Left)
             {
-                isValid &= intersectPoint.X <= StartPoint.X;
+                isValid &= intersectPoint.X <= Start.X;
             }
             else
             {
-                isValid &= intersectPoint.X >= StartPoint.X;
+                isValid &= intersectPoint.X >= Start.X;
             }
         }
 
         if (!other.IsInfinityLerp ())
         {
-            if (other._direction == Direction.Left)
+            if (other.Direction == EdgeDirection.Left)
             {
-                isValid &= intersectPoint.X <= other.StartPoint.X;
+                isValid &= intersectPoint.X <= other.Start.X;
             }
             else
             {
-                isValid &= intersectPoint.X >= other.StartPoint.X;
+                isValid &= intersectPoint.X >= other.Start.X;
             }
         }
 
@@ -241,20 +268,20 @@ public class Edge
     {
         if (IsInfinityLerp ())
         {
-            float x = StartPoint.X;
-            float y = other.StartPoint.Y + (x - other.StartPoint.X) * other._lerp;
+            float x = Start.X;
+            float y = other.Start.Y + (x - other.Start.X) * other.Lerp;
             return new Vector2 (x, y);
         }
         else if (other.IsInfinityLerp ())
         {
-            float x = other.StartPoint.X;
-            float y = StartPoint.Y + (x - StartPoint.X) * _lerp;
+            float x = other.Start.X;
+            float y = Start.Y + (x - Start.X) * Lerp;
             return new Vector2 (x, y);
         }
         else
         {
-            float x = (StartPoint.Y - other.StartPoint.Y + (other.StartPoint.X * other._lerp) - (StartPoint.X * _lerp)) / (other._lerp - _lerp);
-            float y = StartPoint.Y + (x - StartPoint.X) * _lerp;
+            float x = (Start.Y - other.Start.Y + other.Start.X * other.Lerp - Start.X * Lerp) / (other.Lerp - Lerp);
+            float y = Start.Y + (x - Start.X) * Lerp;
             return new Vector2 (x, y);
         }
     }

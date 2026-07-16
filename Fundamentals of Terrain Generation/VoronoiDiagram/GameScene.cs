@@ -1,32 +1,51 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using MonoGame.Samples.Library;
-using MonoGame.Samples.Library.Input;
+using MonoGame.Library;
+using MonoGame.Library.Input;
 
-namespace MonoGame.Samples.VoronoiDiagram;
+namespace VoronoiDiagram;
 
 public class GameScene : Scene
 {
-    private VoronoiDiagram? _voronoiDiagram;
+    private VoronoiDiagram _voronoiDiagram = null!;
 
     private readonly float _stepTime = 1f / 60f;
+
     private float _nextStepTime = 0;
+
     private bool _isPaused = false;
 
-    public override void LoadContent ()
+    public override void Initialize ()
     {
-        _voronoiDiagram = new VoronoiDiagram (GraphicsDevice, size: 512, pointCount: 10);
-
         Input.Keyboard.SubscribePressed (Keys.N, Next);
         Input.Keyboard.SubscribePressed (Keys.P, Pause);
         Input.Keyboard.SubscribePressed (Keys.R, Redo);
+
+        base.Initialize ();
+    }
+
+    public override void LoadContent ()
+    {
+        _voronoiDiagram = new VoronoiDiagram (512, 5);
+
+        base.LoadContent ();
     }
 
     public override void UnloadContent ()
     {
-        Input.Keyboard.UnsubscribePressed (Keys.N, Next);
-        Input.Keyboard.UnsubscribePressed (Keys.P, Pause);
-        Input.Keyboard.UnsubscribePressed (Keys.R, Redo);
+        base.UnloadContent ();
+    }
+
+    protected override void Dispose (bool disposing)
+    {
+        if (disposing)
+        {
+            Input.Keyboard.UnsubscribePressed (Keys.N, Next);
+            Input.Keyboard.UnsubscribePressed (Keys.P, Pause);
+            Input.Keyboard.UnsubscribePressed (Keys.R, Redo);
+        }
+
+        base.Dispose (disposing);
     }
 
     public override void Update (GameTime gameTime)
@@ -39,7 +58,7 @@ public class GameScene : Scene
             {
                 _nextStepTime -= _stepTime;
 
-                _voronoiDiagram?.NextStep ();
+                _voronoiDiagram.NextStep ();
             }
         }
 
@@ -50,7 +69,7 @@ public class GameScene : Scene
     {
         GraphicsDevice.Clear (Color.CornflowerBlue);
 
-        _voronoiDiagram?.Draw ();
+        _voronoiDiagram.Draw (Render);
 
         base.Draw (gameTime);
     }
@@ -59,7 +78,7 @@ public class GameScene : Scene
     {
         _nextStepTime = 0f;
 
-        _voronoiDiagram?.Reset ();
+        _voronoiDiagram.Reset ();
     }
 
     private void Pause (object? sender, KeyboardEventArgs eventArgs)
