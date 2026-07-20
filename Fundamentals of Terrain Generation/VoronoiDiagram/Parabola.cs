@@ -43,6 +43,7 @@ public class Parabola
 
     public Parabola (Vector2 focus)
     {
+        _shape.Color = Color.Orange;
         _shape.Focus = focus;
         _shape.Vertex = focus;
     }

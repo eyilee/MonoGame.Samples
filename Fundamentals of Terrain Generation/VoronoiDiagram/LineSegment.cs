@@ -7,6 +7,12 @@ public class LineSegment
 {
     private readonly SdfLine _shape = new ();
 
+    public Color Color
+    {
+        get => _shape.Color;
+        set => _shape.Color = value;
+    }
+
     public Vector2 Start
     {
         get => _shape.Start;

@@ -29,6 +29,8 @@ public class VoronoiDiagram
 
     private readonly LineSegment _sweepLine = new ();
 
+    private readonly List<LineSegment> _borders = [];
+
     private float _sweeplineY;
 
     private Vector2 _min;
@@ -41,6 +43,11 @@ public class VoronoiDiagram
     {
         _size = size;
         _siteCount = siteCount;
+
+        _borders.Add (new LineSegment () { Start = new Vector2 (0f, 0f), End = new Vector2 (_size, 0f), Color = Color.Blue });
+        _borders.Add (new LineSegment () { Start = new Vector2 (_size, 0f), End = new Vector2 (_size, _size), Color = Color.Blue });
+        _borders.Add (new LineSegment () { Start = new Vector2 (_size, _size), End = new Vector2 (0f, _size), Color = Color.Blue });
+        _borders.Add (new LineSegment () { Start = new Vector2 (0f, _size), End = new Vector2 (0f, 0f), Color = Color.Blue });
 
         Reset ();
     }
@@ -69,12 +76,10 @@ public class VoronoiDiagram
         //    _sites.Add (new Site { Point = position, Color = Color.Black, Radius = 3f });
         //}
 
-        _sites.Add (new Site { Point = new Vector2 (128f, 128f), Color = Color.Black, Radius = 3f });
-        _sites.Add (new Site { Point = new Vector2 (128f, 214f), Color = Color.Black, Radius = 3f });
-        _sites.Add (new Site { Point = new Vector2 (192f, 192f), Color = Color.Black, Radius = 3f });
-        _sites.Add (new Site { Point = new Vector2 (214f, 214f), Color = Color.Black, Radius = 3f });
-        _sites.Add (new Site { Point = new Vector2 (214f, 256f), Color = Color.Black, Radius = 3f });
-        _sites.Add (new Site { Point = new Vector2 (512f, 512f), Color = Color.Black, Radius = 3f });
+        _sites.Add (new Site { Point = new Vector2 (192f, 128f), Color = Color.Black, Radius = 3f });
+        _sites.Add (new Site { Point = new Vector2 (128f, 256f), Color = Color.Black, Radius = 3f });
+        _sites.Add (new Site { Point = new Vector2 (256f, 128f), Color = Color.Black, Radius = 3f });
+        //_sites.Add (new Site { Point = new Vector2 (192f, 256f), Color = Color.Black, Radius = 3f });
 
         _events.AddRange (_sites.Select (s => new SiteEvent (s.Point)));
         _events.Sort ();
@@ -122,10 +127,14 @@ public class VoronoiDiagram
         {
             Event e = _events[0];
 
+            float step = 1f;
+
             while (_sweeplineY < e.Site.Y)
             {
-                _sweeplineY = float.Min (_sweeplineY + 1f, e.Site.Y);
+                _sweeplineY = float.Min (_sweeplineY + step, e.Site.Y);
                 UpdateDirectrix (_sweeplineY);
+
+                step++;
 
                 yield return 0;
             }
@@ -147,31 +156,43 @@ public class VoronoiDiagram
             yield return 0;
         }
 
-        //ExtendEdges ();
+        ExtendEdges ();
 
-        //BuildPolygons ();
+        BuildPolygons ();
 
-        //ClipPolygons ();
+        ClipPolygons ();
     }
 
     private void Draw ()
     {
-        foreach (Parabola parabola in _beachline)
+        if (_events.Count > 0)
         {
-            Vector2 left = parabola.LeftEdge == null ? new Vector2 (_min.X, 0f) : parabola.LeftEdge.Start;
-            Vector2 right = parabola.RightEdge == null ? new Vector2 (_max.X, 0f) : parabola.RightEdge.Start;
-            Vector2 vertex = Parabola.GetVertex (parabola.Focus, _sweeplineY);
-            Vector2 min = Vector2.Clamp (Vector2.Min (Vector2.Min (left, right), vertex), _min, _max);
-            Vector2 max = Vector2.Clamp (Vector2.Max (Vector2.Max (left, right), vertex), _min, _max);
-            parabola.Position = (min + max) * 0.5f;
-            parabola.Scale = max - min;
-            parabola.Position = new Vector2 (_size * 0.5f, _size * 0.5f);
-            parabola.Scale = new Vector2 (_size, _size);
-            parabola.Vertex = vertex;
-        }
+            foreach (Parabola parabola in _beachline)
+            {
+                float left = _min.X;
+                float right = _max.X;
 
-        _sweepLine.Start = new Vector2 (0, _sweeplineY);
-        _sweepLine.End = new Vector2 (_size, _sweeplineY);
+                if (parabola.LeftEdge is Edge leftEdge)
+                {
+                    left = leftEdge.End.X;
+                }
+
+                if (parabola.RightEdge is Edge rightEdge)
+                {
+                    right = rightEdge.End.X;
+                }
+
+                Vector2 min = new (float.Max (left, _min.X), _min.Y);
+                Vector2 max = new (float.Min (right, _max.X), _sweeplineY);
+
+                parabola.Position = (min + max) * 0.5f;
+                parabola.Scale = max - min;
+                parabola.Vertex = Parabola.GetVertex (parabola.Focus, _sweeplineY);
+            }
+
+            _sweepLine.Start = new Vector2 (0, _sweeplineY);
+            _sweepLine.End = new Vector2 (_size, _sweeplineY);
+        }
     }
 
     public void Draw (RenderManager render)
@@ -181,23 +202,30 @@ public class VoronoiDiagram
             site.Draw (render);
         }
 
-        //foreach (Parabola parabola in _beachline)
-        //{
-        //    parabola.Draw (render);
-        //}
-
-        foreach (Edge edge in _edges)
+        if (_events.Count > 0)
         {
-            edge.Draw (render);
-
-            if (edge.Start.Y > _sweeplineY || edge.End.Y > _sweeplineY)
+            foreach (Parabola parabola in _beachline)
             {
-                int a = 0;
-                a++;
+                parabola.Draw (render);
             }
+
+            foreach (Edge edge in _edges)
+            {
+                edge.Draw (render);
+            }
+
+            _sweepLine.Draw (render);
         }
 
-        _sweepLine.Draw (render);
+        foreach (Polygon polygon in _polygons)
+        {
+            polygon.Draw (render);
+        }
+
+        foreach (LineSegment border in _borders)
+        {
+            border.Draw (render);
+        }
     }
 
     private void UpdateDirectrix (float directrixY)
@@ -388,12 +416,6 @@ public class VoronoiDiagram
         _edges.Add (edge);
         _vertices.Add (circleEvent.Vertex);
 
-        if (circleEvent.Vertex.Y > _sweeplineY)
-        {
-            int a = 0;
-            a++;
-        }
-
         leftEdge.SetVertex (circleEvent.Vertex);
         rightEdge.SetVertex (circleEvent.Vertex);
 
@@ -518,6 +540,7 @@ public class VoronoiDiagram
             {
                 Vector2 current = lines[i][1];
                 Vector2 next = lines[(i + 1) % lines.Count][0];
+
                 if (current == next)
                 {
                     continue;
@@ -525,6 +548,7 @@ public class VoronoiDiagram
 
                 int currentCornerIndex = FindCornerIndex (current);
                 int nextCornerIndex = FindCornerIndex (next);
+
                 if (currentCornerIndex == -1 || nextCornerIndex == -1)
                 {
                     continue;
@@ -546,6 +570,7 @@ public class VoronoiDiagram
             }
 
             List<Vector2> vertices = [];
+
             for (int i = 0; i < lines.Count; i++)
             {
                 vertices.Add (lines[i][0]);

@@ -26,7 +26,7 @@ public class GameScene : Scene
 
     public override void LoadContent ()
     {
-        _voronoiDiagram = new VoronoiDiagram (512, 5);
+        _voronoiDiagram = new VoronoiDiagram (512, 16);
 
         base.LoadContent ();
     }

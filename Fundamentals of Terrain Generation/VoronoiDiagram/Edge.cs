@@ -96,15 +96,6 @@ public class Edge
         {
             Vector2[] intersectPoints = Parabola.GetIntersectPoints (LeftSite, RightSite, directrixY);
 
-            foreach (var p in intersectPoints)
-            {
-                if (p.Y > directrixY)
-                {
-                    int a = 0;
-                    a++;
-                }
-            }
-
             if (intersectPoints.Length == 0)
             {
                 return;
