@@ -11,7 +11,7 @@ public class GameScene : Scene
 
     private readonly float _stepTime = 1f / 60f;
 
-    private float _nextStepTime = 0;
+    private float _nextStepTime = 0f;
 
     private bool _isPaused = false;
 

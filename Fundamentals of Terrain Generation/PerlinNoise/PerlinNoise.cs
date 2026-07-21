@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace MonoGame.Samples.PerlinNoise;
+namespace PerlinNoise;
 
 public class PerlinNoise
 {
-    private static readonly float GradientScale = float.Sqrt (2);
+    private static readonly float _gradientScale = float.Sqrt (2);
 
     private readonly int[] _permutation;
 
@@ -72,18 +72,18 @@ public class PerlinNoise
             smoothY) + 1) / 2f;
     }
 
-    public static float SmoothStep (float t) => t * t * t * (t * (t * 6 - 15) + 10);
+    private static float SmoothStep (float t) => t * t * t * (t * (t * 6 - 15) + 10);
 
-    public static float Gradient (int hash, float x, float y) => (hash & 7) switch
+    private static float Gradient (int hash, float x, float y) => (hash & 7) switch
     {
         0 => x + y,
         1 => -x + y,
         2 => x - y,
         3 => -x - y,
-        4 => x * GradientScale,
-        5 => -x * GradientScale,
-        6 => y * GradientScale,
-        7 => -y * GradientScale,
+        4 => x * _gradientScale,
+        5 => -x * _gradientScale,
+        6 => y * _gradientScale,
+        7 => -y * _gradientScale,
         _ => 0,
     };
 
@@ -94,11 +94,11 @@ public class PerlinNoise
             throw new ArgumentOutOfRangeException (nameof (octaves), "Octaves must be greater than zero.");
         }
 
-        float value = 0;
-        float maxValue = 0;
+        float value = 0f;
+        float maxValue = 0f;
 
-        float frequency = 1;
-        float amplitude = 1;
+        float frequency = 1f;
+        float amplitude = 1f;
 
         for (int i = 0; i < octaves; i++)
         {

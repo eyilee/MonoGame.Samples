@@ -17,7 +17,7 @@ public class GameScene : Scene
 
     private readonly float _stepTime = 1f / 4f;
 
-    private float _nextStepTime = 0;
+    private float _nextStepTime = 0f;
 
     public override void Initialize ()
     {

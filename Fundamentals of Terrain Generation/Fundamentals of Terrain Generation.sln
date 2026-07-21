@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SineWave1DHill", "SineWave1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoronoiDiagram", "VoronoiDiagram\VoronoiDiagram.csproj", "{384CFF50-2D9E-B593-5DFF-CBE34BA85A4F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerlinNoise", "PerlinNoise\PerlinNoise.csproj", "{E9D65A35-202C-6D98-C0A9-7DE1223DD43E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{384CFF50-2D9E-B593-5DFF-CBE34BA85A4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{384CFF50-2D9E-B593-5DFF-CBE34BA85A4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{384CFF50-2D9E-B593-5DFF-CBE34BA85A4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9D65A35-202C-6D98-C0A9-7DE1223DD43E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9D65A35-202C-6D98-C0A9-7DE1223DD43E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9D65A35-202C-6D98-C0A9-7DE1223DD43E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9D65A35-202C-6D98-C0A9-7DE1223DD43E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
