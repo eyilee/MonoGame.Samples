@@ -1,16 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using MonoGame.Library.Graphics;
+using System;
 
 namespace VoronoiDiagram;
 
 public class Edge
 {
-    public enum EdgeDirection
-    {
-        Left,
-        Right
-    }
-
     private readonly SdfLine _shape = new ();
 
     public Vector2 Start
@@ -146,6 +141,7 @@ public class Edge
             if (Lerp >= 0)
             {
                 float x = GetX (minY);
+
                 if (x >= minX && x <= maxX)
                 {
                     End = new Vector2 (x, minY);
@@ -154,16 +150,21 @@ public class Edge
             else
             {
                 float x = GetX (maxY);
+
                 if (x >= minX && x <= maxX)
                 {
                     End = new Vector2 (x, maxY);
                 }
             }
 
-            float y = GetY (minX);
-            if (y >= minY && y <= maxY)
+            if (!IsInfinityLerp ())
             {
-                End = new Vector2 (minX, y);
+                float y = GetY (minX);
+
+                if (y >= minY && y <= maxY)
+                {
+                    End = new Vector2 (minX, y);
+                }
             }
         }
         else
@@ -171,6 +172,7 @@ public class Edge
             if (Lerp >= 0)
             {
                 float x = GetX (maxY);
+
                 if (x >= minX && x <= maxX)
                 {
                     End = new Vector2 (x, maxY);
@@ -179,16 +181,21 @@ public class Edge
             else
             {
                 float x = GetX (minY);
+
                 if (x >= minX && x <= maxX)
                 {
                     End = new Vector2 (x, minY);
                 }
             }
 
-            float y = GetY (maxX);
-            if (y >= minY && y <= maxY)
+            if (!IsInfinityLerp ())
             {
-                End = new Vector2 (maxX, y);
+                float y = GetY (maxX);
+
+                if (y >= minY && y <= maxY)
+                {
+                    End = new Vector2 (maxX, y);
+                }
             }
         }
     }
@@ -207,7 +214,7 @@ public class Edge
     {
         if (IsInfinityLerp ())
         {
-            return Start.Y;
+            throw new InvalidOperationException ();
         }
 
         return Start.Y + (x - Start.X) * Lerp;
@@ -228,6 +235,7 @@ public class Edge
         Vector2 intersectPoint = GetIntersectPoint (other);
 
         bool isValid = true;
+
         if (!IsInfinityLerp ())
         {
             if (Direction == EdgeDirection.Left)
@@ -257,23 +265,25 @@ public class Edge
 
     public Vector2 GetIntersectPoint (Edge other)
     {
+        float x;
+        float y;
+
         if (IsInfinityLerp ())
         {
-            float x = Start.X;
-            float y = other.Start.Y + (x - other.Start.X) * other.Lerp;
-            return new Vector2 (x, y);
+            x = Start.X;
+            y = other.Start.Y + (x - other.Start.X) * other.Lerp;
         }
         else if (other.IsInfinityLerp ())
         {
-            float x = other.Start.X;
-            float y = Start.Y + (x - Start.X) * Lerp;
-            return new Vector2 (x, y);
+            x = other.Start.X;
+            y = Start.Y + (x - Start.X) * Lerp;
         }
         else
         {
-            float x = (Start.Y - other.Start.Y + other.Start.X * other.Lerp - Start.X * Lerp) / (other.Lerp - Lerp);
-            float y = Start.Y + (x - Start.X) * Lerp;
-            return new Vector2 (x, y);
+            x = (Start.Y - other.Start.Y + other.Start.X * other.Lerp - Start.X * Lerp) / (other.Lerp - Lerp);
+            y = Start.Y + (x - Start.X) * Lerp;
         }
+
+        return new Vector2 (x, y);
     }
 }

@@ -44,10 +44,10 @@ public class VoronoiDiagram
         _size = size;
         _siteCount = siteCount;
 
-        _borders.Add (new LineSegment () { Start = new Vector2 (0f, 0f), End = new Vector2 (_size, 0f), Color = Color.Blue });
-        _borders.Add (new LineSegment () { Start = new Vector2 (_size, 0f), End = new Vector2 (_size, _size), Color = Color.Blue });
-        _borders.Add (new LineSegment () { Start = new Vector2 (_size, _size), End = new Vector2 (0f, _size), Color = Color.Blue });
-        _borders.Add (new LineSegment () { Start = new Vector2 (0f, _size), End = new Vector2 (0f, 0f), Color = Color.Blue });
+        _borders.Add (new LineSegment () { Start = new Vector2 (0f, 0f), End = new Vector2 (_size, 0f), Color = Color.Green });
+        _borders.Add (new LineSegment () { Start = new Vector2 (_size, 0f), End = new Vector2 (_size, _size), Color = Color.Green });
+        _borders.Add (new LineSegment () { Start = new Vector2 (_size, _size), End = new Vector2 (0f, _size), Color = Color.Green });
+        _borders.Add (new LineSegment () { Start = new Vector2 (0f, _size), End = new Vector2 (0f, 0f), Color = Color.Green });
 
         Reset ();
     }
@@ -64,22 +64,17 @@ public class VoronoiDiagram
         _min = new Vector2 (0f, 0f);
         _max = new Vector2 (_size, _size);
 
-        //while (_sites.Count < _siteCount)
-        //{
-        //    Vector2 position = new (_random.Next (_size), _random.Next (_size));
+        while (_sites.Count < _siteCount)
+        {
+            Vector2 position = new (_random.Next (_size), _random.Next (_size));
 
-        //    if (_sites.Any (s => Vector2.DistanceSquared (s.Point, position) <= 1024f))
-        //    {
-        //        continue;
-        //    }
+            if (_sites.Any (s => Vector2.DistanceSquared (s.Point, position) <= 1024f))
+            {
+                continue;
+            }
 
-        //    _sites.Add (new Site { Point = position, Color = Color.Black, Radius = 3f });
-        //}
-
-        _sites.Add (new Site { Point = new Vector2 (192f, 128f), Color = Color.Black, Radius = 3f });
-        _sites.Add (new Site { Point = new Vector2 (128f, 256f), Color = Color.Black, Radius = 3f });
-        _sites.Add (new Site { Point = new Vector2 (256f, 128f), Color = Color.Black, Radius = 3f });
-        //_sites.Add (new Site { Point = new Vector2 (192f, 256f), Color = Color.Black, Radius = 3f });
+            _sites.Add (new Site { Point = position, Color = Color.Black, Radius = 3f });
+        }
 
         _events.AddRange (_sites.Select (s => new SiteEvent (s.Point)));
         _events.Sort ();
@@ -466,10 +461,13 @@ public class VoronoiDiagram
             }
         }
 
-        _min.X = float.Min (_vertices.Min (v => v.X), 0f);
-        _min.Y = float.Min (_vertices.Min (v => v.Y), 0f);
-        _max.X = float.Max (_vertices.Max (v => v.X), _size);
-        _max.Y = float.Max (_vertices.Max (v => v.Y), _size);
+        if (_vertices.Count > 0)
+        {
+            _min.X = float.Min (_vertices.Min (v => v.X), 0f);
+            _min.Y = float.Min (_vertices.Min (v => v.Y), 0f);
+            _max.X = float.Max (_vertices.Max (v => v.X), _size);
+            _max.Y = float.Max (_vertices.Max (v => v.Y), _size);
+        }
 
         foreach (Edge edge in _edges)
         {
@@ -610,9 +608,9 @@ public class VoronoiDiagram
     {
         foreach (Polygon polygon in _polygons)
         {
-            ClipAgainst (polygon, p => p.X >= 0, (s, e) => IntersectX (s, e, 0));
+            ClipAgainst (polygon, p => p.X >= 0f, (s, e) => IntersectX (s, e, 0f));
             ClipAgainst (polygon, p => p.X <= _size, (s, e) => IntersectX (s, e, _size));
-            ClipAgainst (polygon, p => p.Y >= 0, (s, e) => IntersectY (s, e, 0));
+            ClipAgainst (polygon, p => p.Y >= 0f, (s, e) => IntersectY (s, e, 0f));
             ClipAgainst (polygon, p => p.Y <= _size, (s, e) => IntersectY (s, e, _size));
         }
     }
@@ -649,69 +647,11 @@ public class VoronoiDiagram
 
     private static Vector2 IntersectX (Vector2 startPoint, Vector2 endPoint, float x)
     {
-        return Vector2.Lerp (startPoint, endPoint, (endPoint.X - startPoint.X) / (x - startPoint.X));
-        //Vector2 direction = endPoint - startPoint;
-        //float t = (x - startPoint.X) / direction.X;
-        //return startPoint + direction * t;
+        return Vector2.Lerp (startPoint, endPoint, (x - startPoint.X) / (endPoint.X - startPoint.X));
     }
 
     private static Vector2 IntersectY (Vector2 startPoint, Vector2 endPoint, float y)
     {
-        return Vector2.Lerp (startPoint, endPoint, (endPoint.Y - startPoint.Y) / (y - startPoint.Y));
-        //Vector2 direction = endPoint - startPoint;
-        //float t = (y - startPoint.Y) / direction.Y;
-        //return startPoint + direction * t;
+        return Vector2.Lerp (startPoint, endPoint, (y - startPoint.Y) / (endPoint.Y - startPoint.Y));
     }
-
-    //public void Draw ()
-    //{
-    //    _sdfBatch.Begin (Camera.Main.GetViewProjectionMatrix ());
-    //    _sdfBatch.DrawLine (Vector2.Zero, new Vector2 (0f, _size), Color.Green);
-    //    _sdfBatch.DrawLine (Vector2.Zero, new Vector2 (_size, 0f), Color.Green);
-    //    _sdfBatch.DrawLine (new Vector2 (_size), new Vector2 (0f, _size), Color.Green);
-    //    _sdfBatch.DrawLine (new Vector2 (_size), new Vector2 (_size, 0f), Color.Green);
-
-    //    if (_state != EStepState.Finished)
-    //    {
-    //        _sdfBatch.DrawLine (new Vector2 (0, _sweeplineY), new Vector2 (_size, _sweeplineY), Color.Red);
-
-    //        foreach ((Vector2 focus, Parabola parabola) in _beachline.GroupBy (p => p.Focus).ToDictionary (g => g.Key, g => g.First ()))
-    //        {
-    //            if (focus.Y == _sweeplineY)
-    //            {
-    //                continue;
-    //            }
-
-    //            Vector2 vertex = Parabola.GetVertex (focus, _sweeplineY);
-    //            Vector2 left = parabola.LeftEdge is null ? vertex : parabola.LeftEdge.StartPoint;
-    //            Vector2 right = parabola.RightEdge is null ? vertex : parabola.RightEdge.StartPoint;
-    //            Vector2 min = Vector2.Clamp (Vector2.Min (Vector2.Min (left, right), vertex), _min, _max);
-    //            Vector2 max = Vector2.Clamp (Vector2.Min (Vector2.Max (left, right), vertex), _min, _max);
-    //            _sdfBatch.DrawParabora (focus, vertex, _min, _max, Color.Orange);
-    //        }
-
-    //        foreach (Edge edge in _edges)
-    //        {
-    //            _sdfBatch.DrawLine (edge.StartPoint, edge.EndPoint, Color.Blue);
-    //        }
-    //    }
-
-    //    if (_state == EStepState.Finished)
-    //    {
-    //        foreach (Polygon polygon in _polygons)
-    //        {
-    //            for (int i = 0; i < polygon.Points.Count; i++)
-    //            {
-    //                _sdfBatch.DrawLine (polygon.Points[i], polygon.Points[(i + 1) % polygon.Points.Count], Color.Blue);
-    //            }
-    //        }
-    //    }
-
-    //    foreach (Vector2 point in _points)
-    //    {
-    //        _sdfBatch.DrawCircle (point, 3f, Color.Black);
-    //    }
-
-    //    _sdfBatch.End ();
-    //}
 }
