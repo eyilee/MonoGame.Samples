@@ -5,11 +5,11 @@ namespace AstarPathFinding;
 
 public class Node ()
 {
-    public bool Value;
+    public bool Value { get; set; }
 
-    public required Sprite Sprite;
+    public required Sprite Sprite { get; set; }
 
-    public required Text Text;
+    public required Text Text { get; set; }
 
     public Color Color
     {

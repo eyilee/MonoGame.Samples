@@ -2,19 +2,12 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Library;
-using MonoGame.Library.Graphics;
 using MonoGame.Library.Input;
 
 namespace AstarPathFinding;
 
 public class GameScene : Scene
 {
-    private Texture2D _pixelTexture = null!;
-
-    private Texture2DResource _pixel = null!;
-
-    private FontResource _font = null!;
-
     private AstarPathFinding _astarPathFinding = null!;
 
     private readonly float _stepTime = 1f / 4f;
@@ -31,13 +24,6 @@ public class GameScene : Scene
 
     public override void LoadContent ()
     {
-        _pixelTexture = new Texture2D (GraphicsDevice, 1, 1);
-        _pixelTexture.SetData ([Color.White]);
-
-        _pixel = new Texture2DResource ("Pixel", _pixelTexture);
-
-        _font = new FontResource ("Font", Content.Load<SpriteFont> ("Font"));
-
         _astarPathFinding = new AstarPathFinding (16, 16, 32, 0.8f);
 
         base.LoadContent ();
@@ -45,10 +31,6 @@ public class GameScene : Scene
 
     public override void UnloadContent ()
     {
-        _font.Dispose ();
-        _pixel.Dispose ();
-        _pixelTexture.Dispose ();
-
         base.UnloadContent ();
     }
 

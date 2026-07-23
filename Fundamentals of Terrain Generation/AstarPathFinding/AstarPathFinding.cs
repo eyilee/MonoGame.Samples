@@ -11,10 +11,6 @@ namespace AstarPathFinding
     {
         private readonly Random _random = new ();
 
-        private readonly Sprite _spriteTemplate;
-
-        private readonly Text _textTemplate;
-
         private readonly int _width;
 
         private readonly int _height;
@@ -61,24 +57,6 @@ namespace AstarPathFinding
 
         public AstarPathFinding (int width, int height, int cellSize, float aliveRate)
         {
-            if (Texture2DResource.TryGetValue ("Pixel", out Texture2DResource? texture) && texture != null)
-            {
-                _spriteTemplate = new Sprite (new TextureRegion (texture, 0, 0, 1, 1));
-            }
-            else
-            {
-                throw new InvalidOperationException ("Pixel resource not found");
-            }
-
-            if (FontResource.TryGetValue ("Font", out FontResource? font) && font != null)
-            {
-                _textTemplate = new Text (font);
-            }
-            else
-            {
-                throw new InvalidOperationException ("Font resource not found");
-            }
-
             _width = width;
             _height = height;
             _size = width * height;
@@ -91,16 +69,20 @@ namespace AstarPathFinding
             {
                 for (int y = 0; y < height; y++)
                 {
-                    Sprite sprite = _spriteTemplate.Clone ();
-                    sprite.Size = new Vector2 (cellSize, cellSize);
-                    sprite.Position = offset + new Vector2 (x * cellSize, y * cellSize);
-                    sprite.Color = _deadColor;
-                    sprite.Origin = Vector2.Zero;
+                    Sprite sprite = new (new TextureRegion (Textures.Pixel))
+                    {
+                        Size = new Vector2 (cellSize, cellSize),
+                        Position = offset + new Vector2 (x * cellSize, y * cellSize),
+                        Color = _deadColor,
+                        Origin = Vector2.Zero
+                    };
 
-                    Text text = _textTemplate.Clone ();
-                    text.Value = string.Empty;
-                    text.Position = offset + new Vector2 (x * cellSize + cellSize / 2f, y * cellSize + cellSize / 2f);
-                    text.Color = _costTextColor;
+                    Text text = new (Fonts.Default)
+                    {
+                        Value = string.Empty,
+                        Position = offset + new Vector2 (x * cellSize + cellSize / 2f, y * cellSize + cellSize / 2f),
+                        Color = _costTextColor
+                    };
 
                     _nodes[GetIndex (x, y)] = new Node ()
                     {

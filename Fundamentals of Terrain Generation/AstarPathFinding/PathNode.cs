@@ -2,15 +2,15 @@
 
 public class PathNode (int index, PathNode? parent, int gCost, int hCost)
 {
-    public int Index = index;
+    public int Index => index;
 
-    public PathNode? Parent = parent;
+    public PathNode? Parent { get; set; } = parent;
 
-    public PathNode? Next;
+    public PathNode? Next { get; set; }
 
-    public int GCost = gCost;
+    public int GCost { get; set; } = gCost;
 
-    public int HCost = hCost;
+    public int HCost => hCost;
 
     public int Cost => GCost + HCost;
 
