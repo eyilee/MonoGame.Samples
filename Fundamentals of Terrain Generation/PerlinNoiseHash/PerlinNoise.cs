@@ -1,12 +1,10 @@
-﻿using System;
-using MonoGame.Samples.Library;
+﻿using MonoGame.Library.Utilities;
+using System;
 
-namespace MonoGame.Samples.PerlinNoiseHash;
+namespace PerlinNoiseHash;
 
 public class PerlinNoise
 {
-    private static readonly float GradientScale = 1f / float.Sqrt (2);
-
     private readonly float[] _permutation;
 
     public PerlinNoise (int seed)
@@ -41,22 +39,8 @@ public class PerlinNoise
         x ^= x >> 15;
         x *= 0x735a2d97u;
         x ^= x >> 16;
+
         return x;
-    }
-
-    private float Gradient (float x, float y, int ix, int iy, int seed)
-    {
-        uint hashIndex = LowBias32 ((uint)(ix * 777391u + iy * 475243u + seed * 899069u));
-        hashIndex ^= hashIndex >> 8;
-        hashIndex &= 0xFFu;
-        hashIndex <<= 1;
-
-        float gradientX = _permutation[hashIndex];
-        float gradientY = _permutation[hashIndex + 1];
-        float relativeX = x - ix;
-        float relativeY = y - iy;
-
-        return (gradientX * relativeX + gradientY * relativeY) * GradientScale;
     }
 
     public float Noise (float x, float y, int seed)
@@ -76,5 +60,45 @@ public class PerlinNoise
         float smoothY = relativeY.SmoothStep ();
 
         return (float.Lerp (float.Lerp (aa, ba, smoothX), float.Lerp (ab, bb, smoothX), smoothY) + 1f) * 0.5f;
+    }
+
+    private float Gradient (float x, float y, int ix, int iy, int seed)
+    {
+        uint hashIndex = LowBias32 ((uint)(ix * 777391u + iy * 475243u + seed * 899069u));
+        hashIndex ^= hashIndex >> 8;
+        hashIndex &= 0xFFu;
+        hashIndex <<= 1;
+
+        float gradientX = _permutation[hashIndex];
+        float gradientY = _permutation[hashIndex + 1];
+        float relativeX = x - ix;
+        float relativeY = y - iy;
+
+        return gradientX * relativeX + gradientY * relativeY;
+    }
+
+    public float FractalBrownianMotionNoise (float x, float y, int seed, int octaves, float lacunarity, float persistence)
+    {
+        if (octaves <= 0)
+        {
+            throw new ArgumentOutOfRangeException (nameof (octaves), "Octaves must be greater than zero.");
+        }
+
+        float value = 0f;
+        float maxValue = 0f;
+
+        float frequency = 1f;
+        float amplitude = 1f;
+
+        for (int i = 0; i < octaves; i++)
+        {
+            value += Noise (x * frequency, y * frequency, seed + i) * amplitude;
+            maxValue += amplitude;
+
+            frequency *= lacunarity;
+            amplitude *= persistence;
+        }
+
+        return value / maxValue;
     }
 }

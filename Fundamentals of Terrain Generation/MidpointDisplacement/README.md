@@ -2,7 +2,7 @@
 A simple implementation of midpoint displacement algorithm.
 
 ## MonoGame Version
-3.8.4
+3.8.5
 
 ## Platform
 Windows (Desktop GL)

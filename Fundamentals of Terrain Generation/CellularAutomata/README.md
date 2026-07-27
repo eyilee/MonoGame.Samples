@@ -6,7 +6,7 @@ A simple implementation of cellular automata following these rules:\
 4\. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
 
 ## MonoGame Version
-3.8.4
+3.8.5
 
 ## Platform
 Windows (Desktop GL)

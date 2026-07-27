@@ -6,6 +6,11 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Library", "Library", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Library", "..\Library\MonoGame.Library\MonoGame.Library.csproj", "{4275C5AB-E2D2-05C7-6FAD-487DBBC7A0CC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1405C7B4-826D-3815-676E-8A960AF20099} = {1405C7B4-826D-3815-676E-8A960AF20099}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Library.Content", "..\Library\MonoGame.Library.Content\MonoGame.Library.Content.csproj", "{1405C7B4-826D-3815-676E-8A960AF20099}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AstarPathFinding", "AstarPathFinding\AstarPathFinding.csproj", "{6C412451-1353-8055-8214-1B7FAED7151A}"
 EndProject
@@ -17,11 +22,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiamondSquare", "DiamondSqu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MidpointDisplacement", "MidpointDisplacement\MidpointDisplacement.csproj", "{388B8144-7CBE-434C-0CCC-E9832D1AAC2C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerlinNoise", "PerlinNoise\PerlinNoise.csproj", "{4DA84842-E80E-031D-A9B4-4A2BFFB78B3D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerlinNoiseHash", "PerlinNoiseHash\PerlinNoiseHash.csproj", "{06506633-34C2-B5BD-3D73-AF40D7ADF057}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SineWave1DHill", "SineWave1DHill\SineWave1DHill.csproj", "{59133DBB-AFF6-6A88-7ECF-53D41754808B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoronoiDiagram", "VoronoiDiagram\VoronoiDiagram.csproj", "{384CFF50-2D9E-B593-5DFF-CBE34BA85A4F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerlinNoise", "PerlinNoise\PerlinNoise.csproj", "{E9D65A35-202C-6D98-C0A9-7DE1223DD43E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoronoiDiagram", "VoronoiDiagram\VoronoiDiagram.csproj", "{5658FA53-0ED7-E762-67B1-DF45FC9CB623}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +36,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4275C5AB-E2D2-05C7-6FAD-487DBBC7A0CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4275C5AB-E2D2-05C7-6FAD-487DBBC7A0CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4275C5AB-E2D2-05C7-6FAD-487DBBC7A0CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4275C5AB-E2D2-05C7-6FAD-487DBBC7A0CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1405C7B4-826D-3815-676E-8A960AF20099}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1405C7B4-826D-3815-676E-8A960AF20099}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1405C7B4-826D-3815-676E-8A960AF20099}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1405C7B4-826D-3815-676E-8A960AF20099}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6C412451-1353-8055-8214-1B7FAED7151A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6C412451-1353-8055-8214-1B7FAED7151A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C412451-1353-8055-8214-1B7FAED7151A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -49,28 +64,29 @@ Global
 		{388B8144-7CBE-434C-0CCC-E9832D1AAC2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{388B8144-7CBE-434C-0CCC-E9832D1AAC2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{388B8144-7CBE-434C-0CCC-E9832D1AAC2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DA84842-E80E-031D-A9B4-4A2BFFB78B3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DA84842-E80E-031D-A9B4-4A2BFFB78B3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DA84842-E80E-031D-A9B4-4A2BFFB78B3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DA84842-E80E-031D-A9B4-4A2BFFB78B3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06506633-34C2-B5BD-3D73-AF40D7ADF057}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06506633-34C2-B5BD-3D73-AF40D7ADF057}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06506633-34C2-B5BD-3D73-AF40D7ADF057}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06506633-34C2-B5BD-3D73-AF40D7ADF057}.Release|Any CPU.Build.0 = Release|Any CPU
 		{59133DBB-AFF6-6A88-7ECF-53D41754808B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{59133DBB-AFF6-6A88-7ECF-53D41754808B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59133DBB-AFF6-6A88-7ECF-53D41754808B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59133DBB-AFF6-6A88-7ECF-53D41754808B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{384CFF50-2D9E-B593-5DFF-CBE34BA85A4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{384CFF50-2D9E-B593-5DFF-CBE34BA85A4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{384CFF50-2D9E-B593-5DFF-CBE34BA85A4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{384CFF50-2D9E-B593-5DFF-CBE34BA85A4F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E9D65A35-202C-6D98-C0A9-7DE1223DD43E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E9D65A35-202C-6D98-C0A9-7DE1223DD43E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E9D65A35-202C-6D98-C0A9-7DE1223DD43E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E9D65A35-202C-6D98-C0A9-7DE1223DD43E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4275C5AB-E2D2-05C7-6FAD-487DBBC7A0CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4275C5AB-E2D2-05C7-6FAD-487DBBC7A0CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4275C5AB-E2D2-05C7-6FAD-487DBBC7A0CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4275C5AB-E2D2-05C7-6FAD-487DBBC7A0CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5658FA53-0ED7-E762-67B1-DF45FC9CB623}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5658FA53-0ED7-E762-67B1-DF45FC9CB623}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5658FA53-0ED7-E762-67B1-DF45FC9CB623}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5658FA53-0ED7-E762-67B1-DF45FC9CB623}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4275C5AB-E2D2-05C7-6FAD-487DBBC7A0CC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{1405C7B4-826D-3815-676E-8A960AF20099} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EE926E3A-A067-49B5-85B6-8D92ECDD8D09}

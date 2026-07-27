@@ -2,7 +2,7 @@
 A simple implementation of 1D hill generation algorithm. Iterates a random value heightmap using sine wave interpolation.
 
 ## MonoGame Version
-3.8.4
+3.8.5
 
 ## Platform
 Windows (Desktop GL)

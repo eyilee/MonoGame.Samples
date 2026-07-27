@@ -1,10 +1,11 @@
-﻿using System;
+﻿using MonoGame.Library.Utilities;
+using System;
 
 namespace PerlinNoise;
 
 public class PerlinNoise
 {
-    private static readonly float _gradientScale = float.Sqrt (2);
+    private static readonly float _gradientScale = 1f / float.Sqrt (2);
 
     private readonly int[] _permutation;
 
@@ -64,26 +65,25 @@ public class PerlinNoise
         float relativeX = x - MathF.Floor (x);
         float relativeY = y - MathF.Floor (y);
 
-        float smoothX = SmoothStep (relativeX);
-        float smoothY = SmoothStep (relativeY);
+        float smoothX = relativeX.SmoothStep ();
+        float smoothY = relativeY.SmoothStep ();
 
-        return (float.Lerp (float.Lerp (Gradient (aa, relativeX, relativeY), Gradient (ba, relativeX - 1, relativeY), smoothX),
+        return (float.Lerp (
+            float.Lerp (Gradient (aa, relativeX, relativeY), Gradient (ba, relativeX - 1, relativeY), smoothX),
             float.Lerp (Gradient (ab, relativeX, relativeY - 1), Gradient (bb, relativeX - 1, relativeY - 1), smoothX),
             smoothY) + 1) / 2f;
     }
 
-    private static float SmoothStep (float t) => t * t * t * (t * (t * 6 - 15) + 10);
-
     private static float Gradient (int hash, float x, float y) => (hash & 7) switch
     {
-        0 => x + y,
-        1 => -x + y,
-        2 => x - y,
-        3 => -x - y,
-        4 => x * _gradientScale,
-        5 => -x * _gradientScale,
-        6 => y * _gradientScale,
-        7 => -y * _gradientScale,
+        0 => (x + y) * _gradientScale,
+        1 => (-x + y) * _gradientScale,
+        2 => (x - y) * _gradientScale,
+        3 => (-x - y) * _gradientScale,
+        4 => x,
+        5 => -x,
+        6 => y,
+        7 => -y,
         _ => 0,
     };
 

@@ -5,7 +5,7 @@ The permutation table takes from Ken Perlin's [implementation](https://mrl.cs.ny
 The default frequency is set to 0.03, and the step size is 0.01.
 
 ## MonoGame Version
-3.8.4
+3.8.5
 
 ## Platform
 Windows (Desktop GL)

@@ -5,7 +5,7 @@ After find out all edges and vertices, extend size of map to fit the fareast ver
 Then construct polygons by vertices.
 
 ## MonoGame Version
-3.8.4
+3.8.5
 
 ## Platform
 Windows (Desktop GL)

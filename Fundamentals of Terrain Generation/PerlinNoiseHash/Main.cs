@@ -1,11 +1,12 @@
-﻿using MonoGame.Samples.Library;
+﻿using MonoGame.Library;
 
-namespace MonoGame.Samples.PerlinNoiseHash;
+namespace PerlinNoiseHash;
 
 public class Main : Core
 {
-    private const int WindowWidth = 512;
-    private const int WindowHeight = 512;
+    private const int WindowWidth = 800;
+
+    private const int WindowHeight = 600;
 
     public Main ()
         : base ("PerlinNoiseHash", WindowWidth, WindowHeight, false)

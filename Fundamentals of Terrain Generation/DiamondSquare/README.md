@@ -2,7 +2,7 @@
 A simple implementation of diamond square algorithm.
 
 ## MonoGame Version
-3.8.4
+3.8.5
 
 ## Platform
 Windows (Desktop GL)
