@@ -12,11 +12,11 @@ public class ViewPoint
 
     private Vector2 _velocity = Vector2.Zero;
 
-    private float _targetLength = 5f;
+    private float _targetLength = 0f;
 
     private float _damping = 0.1f;
 
-    public void Initialize (Vector2 position, float targetLength = 5f, float damping = 0.1f)
+    public void Initialize (Vector2 position, float targetLength = 0f, float damping = 0.1f)
     {
         _position = position;
         _targetLength = targetLength;
@@ -36,8 +36,9 @@ public class ViewPoint
     {
         float length = Vector2.Distance (_position, target);
 
-        if (length <= _targetLength)
+        if (float.Abs (length - _targetLength) < 0.01f)
         {
+            _position = target;
             _velocity = Vector2.Zero;
             return;
         }

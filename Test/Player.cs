@@ -13,15 +13,19 @@ public class Player : Entity
 
     private readonly ViewPoint _viewPoint = new ();
 
-    private readonly float _maxVelocity = 200f;
+    private readonly float _maxVelocity = 400f;
 
-    private readonly float _acceleration = 500f;
+    private readonly float _acceleration = 800f;
 
-    private readonly float _deceleration = 100f;
+    private readonly float _deceleration = 80f;
 
-    private readonly float _angularVelocity = float.Pi;
+    private readonly float _maxAngularVelocity = float.Pi;
+
+    private readonly float _angularAcceleration = float.Pi * 4f;
 
     private Vector2 _velocity = Vector2.Zero;
+
+    private float _angularVelocity = 0f;
 
     public Player ()
     {
@@ -61,26 +65,31 @@ public class Player : Entity
             acceleration = _acceleration;
         }
 
-        float velocity = _velocity.Length ();
-
-        if (velocity > 0f)
-        {
-            Vector2 forward = _velocity;
-            forward.Normalize ();
-
-            _velocity = forward * float.Max (velocity - _deceleration * deltaTime, 0f);
-        }
-
         if (acceleration != 0f)
         {
+            float deltaRotation = MathHelper.WrapAngle (Rotation - float.Atan2 (_velocity.Y, _velocity.X));
+
+            if (float.Abs (deltaRotation) < float.Pi / 6f)
+            {
+                _velocity.Rotate (deltaRotation);
+            }
+
             Vector2 direction = new (float.Cos (Rotation), float.Sin (Rotation));
-
             _velocity += direction * acceleration * deltaTime;
+            _velocity = Vector2.Normalize (_velocity) * float.Min (_velocity.Length (), _maxVelocity);
+        }
+        else
+        {
+            float velocity = float.Max (_velocity.Length () - _deceleration * deltaTime, 0f);
 
-            Vector2 forward = _velocity;
-            forward.Normalize ();
+            Vector2 direction = _velocity;
 
-            _velocity = forward * float.Min (_velocity.Length (), _maxVelocity);
+            if (direction.LengthSquared () > 0f)
+            {
+                direction.Normalize ();
+            }
+
+            _velocity = direction * float.Min (velocity, _maxVelocity);
         }
 
         Position += _velocity * deltaTime;
@@ -113,12 +122,17 @@ public class Player : Entity
 
         if (x == 0f && y == 0f)
         {
+            _angularVelocity = 0f;
             return;
         }
 
         float targetAngle = float.Atan2 (y, x);
         float delta = MathHelper.WrapAngle (targetAngle - Rotation);
-        float maxStep = _angularVelocity * deltaTime;
+
+        _angularVelocity += _angularAcceleration * deltaTime * float.Sign (delta);
+        _angularVelocity = float.Clamp (_angularVelocity, -_maxAngularVelocity, _maxAngularVelocity);
+
+        float maxStep = float.Abs (_angularVelocity * deltaTime);
         float step = float.Clamp (delta, -maxStep, maxStep);
 
         Rotation += step;
