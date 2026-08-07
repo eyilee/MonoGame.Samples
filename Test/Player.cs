@@ -15,7 +15,7 @@ public class Player : Entity
 
     private readonly float _maxVelocity = 400f;
 
-    private readonly float _acceleration = 800f;
+    private readonly float _acceleration = 400f;
 
     private readonly float _deceleration = 80f;
 
@@ -75,8 +75,15 @@ public class Player : Entity
             }
 
             Vector2 direction = new (float.Cos (Rotation), float.Sin (Rotation));
+
             _velocity += direction * acceleration * deltaTime;
-            _velocity = Vector2.Normalize (_velocity) * float.Min (_velocity.Length (), _maxVelocity);
+
+            if (_velocity.LengthSquared () > 0f)
+            {
+                direction = Vector2.Normalize (_velocity);
+            }
+
+            _velocity = direction * float.Min (_velocity.Length (), _maxVelocity);
         }
         else
         {
