@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Library;
 using MonoGame.Library.Graphics;
 using MonoGame.Library.Input;
 
