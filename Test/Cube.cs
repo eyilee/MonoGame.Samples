@@ -13,21 +13,43 @@ public class Cube : Entity
         set
         {
             _shape.Size = value;
-
-            if (PhysicsBody != null)
-            {
-                PhysicsBody.Collider.Size = value;
-            }
+            _collider.Size = value;
         }
     }
 
     private readonly SdfRectangle _shape = new ();
 
-    public Cube ()
+    private readonly BoxCollider _collider = new ();
+
+    private bool _initialized = false;
+
+    public void Initialize (Vector2 position, float rotation)
     {
+        if (_initialized)
+        {
+            return;
+        }
+
+        Position = position;
+        Rotation = rotation;
+        Size = new Vector2 (30f, 30f);
+
         _shape.Thickness = 3f;
         _shape.Color = Color.White;
-        _shape.Size = new Vector2 (30f, 30f);
+
+        _initialized = true;
+    }
+
+    public void AttachPhysics (PhysicsWorld physicsWorld)
+    {
+        AddPhysics (physicsWorld);
+
+        PhysicsBody?.AttachCollider (_collider);
+    }
+
+    public void DetachPhysics (PhysicsWorld physicsWorld)
+    {
+        RemovePhysics (physicsWorld);
     }
 
     public override void OnTransformChanged ()
@@ -53,6 +75,11 @@ public class Cube : Entity
 
     public void Draw (RenderManager render)
     {
+        if (!_initialized)
+        {
+            return;
+        }
+
         _shape.Draw (render);
     }
 }

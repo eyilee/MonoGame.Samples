@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Library;
 using MonoGame.Library.Graphics;
 using MonoGame.Library.Physics;
@@ -27,12 +28,13 @@ public class GameScene : Scene
         _center.Radius = 5f;
 
         _player.Initialize (position, 0f);
+        _player.AttachPhysics (_physicsWorld);
 
         for (int i = 0; i < 10; i++)
         {
             Cube cube = new ();
-            cube.AddPhysics (_physicsWorld);
-            cube.Position = new Vector2 (position.X + i * 20f, position.Y + i * 20f);
+            cube.Initialize (new Vector2 (position.X + i * 20f, position.Y + i * 20f), 0f);
+            cube.AttachPhysics (_physicsWorld);
             cube.Size = new Vector2 (30f, 30f);
             _cubes.Add (cube);
         }
@@ -45,9 +47,10 @@ public class GameScene : Scene
         float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         _player.Update (Input, deltaTime);
-        _cubes[0].Position = _cubes[0].Position + new Vector2 (-5f * deltaTime, 0f);
-
         _physicsWorld.Update (deltaTime);
+
+        MouseState state = Mouse.GetState ();
+        _cubes[0].Position = Camera.Main.Position + state.Position.ToVector2 ();
 
         base.Update (gameTime);
     }

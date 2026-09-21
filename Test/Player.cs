@@ -3,12 +3,25 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Library;
 using MonoGame.Library.Graphics;
 using MonoGame.Library.Input;
+using MonoGame.Library.Physics;
 
 namespace Test;
 
 public class Player : Entity
 {
+    public float Radius
+    {
+        get => _shape.Radius;
+        set
+        {
+            _shape.Radius = value;
+            _collider.Radius = value;
+        }
+    }
+
     private readonly SdfCircle _shape = new ();
+
+    private readonly CircleCollider _collider = new ();
 
     private readonly Indicator _indicator = new ();
 
@@ -28,22 +41,47 @@ public class Player : Entity
 
     private float _angularVelocity = 0f;
 
-    public Player ()
-    {
-        _shape.Thickness = 3f;
-        _shape.Color = Color.Blue;
-        _shape.Radius = 5f;
-        _shape.Filled = true;
-    }
+    private bool _initialized = false;
 
     public void Initialize (Vector2 position, float rotation)
     {
+        if (_initialized)
+        {
+            return;
+        }
+
         Position = position;
         Rotation = rotation;
+        Radius = 5f;
 
-        _shape.Position = position;
+        _shape.Thickness = 3f;
+        _shape.Color = Color.Blue;
+        _shape.Filled = true;
+
         _indicator.Initialize (position, rotation);
         _viewPoint.Initialize (_indicator.Target);
+
+        _initialized = true;
+    }
+
+    public void AttachPhysics (PhysicsWorld physicsWorld)
+    {
+        AddPhysics (physicsWorld);
+
+        PhysicsBody?.AttachCollider (_collider);
+    }
+
+    public void DetachPhysics (PhysicsWorld physicsWorld)
+    {
+        RemovePhysics (physicsWorld);
+    }
+
+    public override void OnTransformChanged ()
+    {
+        _shape.Position = Position;
+        _shape.Rotation = Rotation;
+        _indicator.Position = Position;
+        _indicator.Rotation = Rotation;
     }
 
     public void Update (InputManager input, float deltaTime)
@@ -51,9 +89,6 @@ public class Player : Entity
         ProcessPosition (input, deltaTime);
         ProcessRotation (input, deltaTime);
 
-        _shape.Position = Position;
-        _indicator.Position = Position;
-        _indicator.Rotation = Rotation;
         _viewPoint.Update (_indicator.Target, deltaTime);
     }
 
