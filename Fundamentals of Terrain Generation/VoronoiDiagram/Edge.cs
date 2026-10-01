@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using MonoGame.Library.Graphics;
+using MonoGame.Library.Graphics.Shapes;
 using System;
 
 namespace VoronoiDiagram;
