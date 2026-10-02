@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Library;
 using MonoGame.Library.Graphics;
+using MonoGame.Library.Graphics.Shapes;
 using MonoGame.Library.Input;
 using MonoGame.Library.Physics;
 

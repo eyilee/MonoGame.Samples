@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Library;
-using MonoGame.Library.Graphics;
+using MonoGame.Library.Graphics.Shapes;
 using MonoGame.Library.Physics;
 
 namespace Test;
@@ -17,6 +17,8 @@ public class GameScene : Scene
     private readonly List<Cube> _cubes = [];
 
     private readonly PhysicsWorld _physicsWorld = new ();
+
+    private readonly PolygonShape _polygon = new ();
 
     public override void Initialize ()
     {
@@ -39,6 +41,34 @@ public class GameScene : Scene
             _cubes.Add (cube);
         }
 
+        _polygon.SetVertices ([
+            new Vector2 (100f, 100f),
+            new Vector2 (200f, 100f),
+            new Vector2 (200f, 200f),
+            new Vector2 (100f, 200f),
+            new Vector2 (0f, 150f),
+            ]);
+
+        _polygon.Color = Color.Green;
+        _polygon.Depth = 0.5f;
+
+        List<Vector2> v1 = [
+            new Vector2 (100f, 100f),
+            new Vector2 (200f, 100f),
+            new Vector2 (200f, 200f),
+            new Vector2 (100f, 200f)
+            ];
+
+        List<Vector2> v2 = [
+            new Vector2 (150f, 150f),
+            new Vector2 (250f, 150f),
+            new Vector2 (250f, 250f),
+            new Vector2 (150f, 250f)
+            ];
+
+
+        bool intersects = Physics2D.Intersects (v1, v2);
+
         base.Initialize ();
     }
 
@@ -46,11 +76,14 @@ public class GameScene : Scene
     {
         float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+        _polygon.Rotation = float.Sin ((float)gameTime.TotalGameTime.TotalSeconds) * 0.5f;
+
         _player.Update (Input, deltaTime);
-        _physicsWorld.Update (deltaTime);
 
         MouseState state = Mouse.GetState ();
         _cubes[0].Position = Camera.Main.Position + state.Position.ToVector2 ();
+
+        _physicsWorld.Update (deltaTime);
 
         base.Update (gameTime);
     }
@@ -61,11 +94,13 @@ public class GameScene : Scene
 
         _center.Draw (Render);
         _player.Draw (Render);
+        _polygon.Draw (Render);
 
         foreach (Cube cube in _cubes)
         {
             cube.Draw (Render);
         }
+
 
         base.Draw (gameTime);
     }
