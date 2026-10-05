@@ -16,9 +16,9 @@ public class GameScene : Scene
 
     private readonly List<Cube> _cubes = [];
 
-    private readonly PhysicsWorld _physicsWorld = new ();
+    private readonly List<Polygon> _polygons = [];
 
-    private readonly PolygonShape _polygon = new ();
+    private readonly PhysicsWorld _physicsWorld = new ();
 
     public override void Initialize ()
     {
@@ -29,45 +29,38 @@ public class GameScene : Scene
         _center.Color = Color.Green;
         _center.Radius = 5f;
 
-        _player.Initialize (position, 0f);
-        _player.AttachPhysics (_physicsWorld);
+        //_player.Initialize (position, 0f);
+        //_player.AttachPhysics (_physicsWorld);
 
-        for (int i = 0; i < 10; i++)
+        //for (int i = 0; i < 10; i++)
+        //{
+        //    Cube cube = new ();
+        //    cube.Initialize (new Vector2 (position.X + i * 20f, position.Y + i * 20f), 0f);
+        //    cube.AttachPhysics (_physicsWorld);
+        //    cube.Size = new Vector2 (30f, 30f);
+        //    _cubes.Add (cube);
+        //}
+
+        for (int i = 0; i < 2; i++)
         {
-            Cube cube = new ();
-            cube.Initialize (new Vector2 (position.X + i * 20f, position.Y + i * 20f), 0f);
-            cube.AttachPhysics (_physicsWorld);
-            cube.Size = new Vector2 (30f, 30f);
-            _cubes.Add (cube);
+            Polygon polygon = new ();
+
+            List<Vector2> vertices = new (i + 5);
+
+            for (int j = 0; j < i + 5; j++)
+            {
+                vertices.Add (Vector2.Rotate (Vector2.One * 30f, 2f * float.Pi * j / (i + 5f)));
+            }
+
+            polygon.Initialize (new Vector2 (position.X + i * 100f, position.Y + i * 100f), 0f, vertices);
+            polygon.AttachPhysics (_physicsWorld);
+
+            if (i == 0 && polygon.PhysicsBody != null)
+            {
+                polygon.PhysicsBody.IsStatic = true;
+            }
+            _polygons.Add (polygon);
         }
-
-        _polygon.SetVertices ([
-            new Vector2 (100f, 100f),
-            new Vector2 (200f, 100f),
-            new Vector2 (200f, 200f),
-            new Vector2 (100f, 200f),
-            new Vector2 (0f, 150f),
-            ]);
-
-        _polygon.Color = Color.Green;
-        _polygon.Depth = 0.5f;
-
-        List<Vector2> v1 = [
-            new Vector2 (100f, 100f),
-            new Vector2 (200f, 100f),
-            new Vector2 (200f, 200f),
-            new Vector2 (100f, 200f)
-            ];
-
-        List<Vector2> v2 = [
-            new Vector2 (150f, 150f),
-            new Vector2 (250f, 150f),
-            new Vector2 (250f, 250f),
-            new Vector2 (150f, 250f)
-            ];
-
-
-        bool intersects = Physics2D.Intersects (v1, v2);
 
         base.Initialize ();
     }
@@ -76,12 +69,11 @@ public class GameScene : Scene
     {
         float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-        _polygon.Rotation = float.Sin ((float)gameTime.TotalGameTime.TotalSeconds) * 0.5f;
-
-        _player.Update (Input, deltaTime);
+        //_player.Update (Input, deltaTime);
 
         MouseState state = Mouse.GetState ();
-        _cubes[0].Position = Camera.Main.Position + state.Position.ToVector2 ();
+        //_cubes[0].Position = Camera.Main.Position + state.Position.ToVector2 ();
+        _polygons[0].Position = Camera.Main.Position + state.Position.ToVector2 ();
 
         _physicsWorld.Update (deltaTime);
 
@@ -93,14 +85,17 @@ public class GameScene : Scene
         GraphicsDevice.Clear (Color.CornflowerBlue);
 
         _center.Draw (Render);
-        _player.Draw (Render);
-        _polygon.Draw (Render);
+        //_player.Draw (Render);
 
-        foreach (Cube cube in _cubes)
+        //foreach (Cube cube in _cubes)
+        //{
+        //    cube.Draw (Render);
+        //}
+
+        foreach (Polygon polygon in _polygons)
         {
-            cube.Draw (Render);
+            polygon.Draw (Render);
         }
-
 
         base.Draw (gameTime);
     }
