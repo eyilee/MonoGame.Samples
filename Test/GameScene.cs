@@ -59,6 +59,7 @@ public class GameScene : Scene
             {
                 polygon.PhysicsBody.IsStatic = true;
             }
+
             _polygons.Add (polygon);
         }
 
